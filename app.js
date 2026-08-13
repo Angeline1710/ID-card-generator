@@ -1430,15 +1430,28 @@
   }
 
   shareBtn.addEventListener("click", () => {
+    const caption = buildCaption();
+    const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(caption)}&hashtags=HackerHouseGoa,FrameInGoa`;
+
+    // 1. Open X in a new tab/window immediately inside the user click handler
+    // so browsers & popup blockers never block it
+    let shareWin = null;
+    try {
+      shareWin = window.open(tweetUrl, "_blank");
+    } catch (e) {
+      /* popup blocked, fallback to location redirect */
+    }
+
+    // 2. Generate canvas blob and trigger image file download
     canvas.toBlob(async blob => {
       if (!blob) return;
-      const caption = buildCaption();
       const fname = `hhgoa2026-${state.format === "A" ? "frame" : "id-card"}.png`;
       const file = new File([blob], fname, { type: "image/png" });
 
-      /* ── Primary: Native Share (mobile — can attach file directly) ── */
+      /* ── Native Share (mobile override if supported) ── */
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
+          if (shareWin && !shareWin.closed) shareWin.close();
           await navigator.share({
             files: [file],
             title: "Hacker House Goa 2026",
@@ -1448,12 +1461,10 @@
           return;
         } catch (err) {
           if (err?.name === "AbortError") return;
-          /* fall through to desktop fallback */
         }
       }
 
-      /* ── Fallback: Auto-download image + redirect to X ── */
-      // Step 1: Download the image
+      /* ── File Download ── */
       const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = dlUrl;
@@ -1463,14 +1474,12 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(dlUrl), 5000);
 
-      // Step 2: Short delay to let download start, then redirect to X (opens X app or X web page)
-      toast("Image saved! Redirecting to X — attach your graphic to post 📎");
+      toast("Image saved! Attach your downloaded graphic to your post on X 📎");
 
-      setTimeout(() => {
-        const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(caption)}&hashtags=HackerHouseGoa,FrameInGoa`;
+      // Fallback: If window.open was blocked by mobile browser setting, redirect current window
+      if (!shareWin || shareWin.closed) {
         window.location.href = tweetUrl;
-      }, 500);
-
+      }
     }, "image/png");
   });
 
