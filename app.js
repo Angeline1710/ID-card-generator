@@ -940,9 +940,11 @@
       font: `700 28px 'Space Mono',monospace`, color: BASE.cream, letterSpacing: 7, flip: true,
     });
 
-    /* गोवा badge */
-    pillBadge(ctx, cx + r * 0.56, cy + r * 0.62, 110, 42, BASE.coral,
+    /* गोवा badge & #FrameInGoa badge */
+    pillBadge(ctx, cx - r * 0.52, cy + r * 0.65, 110, 42, BASE.coral,
              BASE.cream, "गोवा", "700 20px 'Baloo 2',sans-serif");
+    pillBadge(ctx, cx + r * 0.55, cy + r * 0.68, 175, 46, BASE.pink,
+             BASE.cream, "#FrameInGoa", "700 22px 'Baloo 2',sans-serif");
 
     /* CODE • SUN • CHAOS small text at very top */
     ctx.font = "600 14px 'Space Mono',monospace";
@@ -1060,6 +1062,10 @@
 
     /* ── SURFBOARDS ── */
     drawSurfboards(ctx, W - 135, sandTop + 40, 1.45);
+
+    /* #FrameInGoa badge overlay at bottom right corner of photo */
+    pillBadge(ctx, cx + r * 0.52, cy + r * 0.62, 165, 42, BASE.pink,
+             BASE.cream, "#FrameInGoa", "700 20px 'Baloo 2',sans-serif");
 
     /* ── DECORATIVE ELEMENTS ON SAND ── */
     drawStarfish(ctx, W / 2 - 140, sandTop + 125, 13);
