@@ -2,16 +2,31 @@
   "use strict";
 
   /* ---------------- constants ---------------- */
-  const COLORS = {
-    green: "#0b5c34",
-    greenDeep: "#073820",
-    greenLight: "#0f7a45",
-    yellow: "#ffd400",
-    yellowSoft: "#ffe873",
-    pink: "#ff2f92",
-    pinkDeep: "#d6127a",
-    cream: "#fff8e7",
-    ink: "#06331e",
+  const THEMES = {
+    classic: {
+      green: "#0b5c34", greenDeep: "#073820", greenLight: "#0f7a45",
+      yellow: "#ffd400", yellowSoft: "#ffe873",
+      pink: "#ff2f92", pinkDeep: "#d6127a",
+      cream: "#fff8e7", ink: "#06331e",
+    },
+    sunset: {
+      green: "#7a2e0f", greenDeep: "#3d1204", greenLight: "#a8481c",
+      yellow: "#ffb703", yellowSoft: "#ffd166",
+      pink: "#ff3d5a", pinkDeep: "#c8102e",
+      cream: "#fff3e0", ink: "#3d1204",
+    },
+    midnight: {
+      green: "#1b1035", greenDeep: "#0d0720", greenLight: "#2e1a55",
+      yellow: "#ffd400", yellowSoft: "#ffe873",
+      pink: "#00e5ff", pinkDeep: "#00a8bf",
+      cream: "#f1e9ff", ink: "#0d0720",
+    },
+    beach: {
+      green: "#0a4d68", greenDeep: "#052733", greenLight: "#0f6f94",
+      yellow: "#ffd166", yellowSoft: "#ffe29a",
+      pink: "#ff6b9d", pinkDeep: "#e0447a",
+      cream: "#eaf6ff", ink: "#052733",
+    },
   };
 
   const TITLE_ADJ = ["Chief", "Head of", "VP of", "Director of", "Founding", "Lead", "Minister of", "Senior", "Global"];
@@ -34,6 +49,7 @@
   /* ---------------- state ---------------- */
   const state = {
     format: "A",
+    theme: "classic",
     img: null,
     transform: { A: null, B: null },
     idCode: randomIdCode(),
@@ -61,7 +77,7 @@
   const titleInput = document.getElementById("titleInput");
   const shuffleTitleBtn = document.getElementById("shuffleTitleBtn");
   const toastEl = document.getElementById("toast");
-  const liveClock = document.getElementById("liveClock");
+  const themeSwatches = document.querySelectorAll(".theme-swatch");
 
   titleInput.value = randomTitle();
 
@@ -74,17 +90,30 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3200);
   }
 
-  /* ---------------- live clock ---------------- */
-  function updateClock() {
-    const d = new Date();
-    let h = d.getHours();
-    const m = d.getMinutes().toString().padStart(2, "0");
-    const pm = h >= 12;
-    h = h % 12; if (h === 0) h = 12;
-    liveClock.innerHTML = `${h}:${m}<span class="pm">${pm ? "PM" : "AM"}</span>`;
+  /* ---------------- theme ---------------- */
+  function applyThemeVars(themeId) {
+    const t = THEMES[themeId];
+    const root = document.documentElement.style;
+    root.setProperty("--green-deep", t.greenDeep);
+    root.setProperty("--green", t.green);
+    root.setProperty("--green-light", t.greenLight);
+    root.setProperty("--yellow", t.yellow);
+    root.setProperty("--yellow-soft", t.yellowSoft);
+    root.setProperty("--pink", t.pink);
+    root.setProperty("--pink-deep", t.pinkDeep);
+    root.setProperty("--cream", t.cream);
+    root.setProperty("--ink", t.ink);
   }
-  updateClock();
-  setInterval(updateClock, 15000);
+
+  themeSwatches.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      themeSwatches.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.theme = btn.dataset.theme;
+      applyThemeVars(state.theme);
+      render();
+    });
+  });
 
   /* ---------------- geometry helpers ---------------- */
   function getWindowRect(format) {
@@ -284,6 +313,7 @@
 
   /* ---------------- format A: PFP frame ---------------- */
   function drawFrameA() {
+    const COLORS = THEMES[state.theme];
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -333,6 +363,7 @@
 
   /* ---------------- format B: builder ID card ---------------- */
   function drawCardB() {
+    const COLORS = THEMES[state.theme];
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -649,28 +680,16 @@
   /* ---------------- share to X ---------------- */
   function buildCaption() {
     if (state.format === "A") {
-      return "Landed my Hacker House Goa 2026 profile frame \u{1F334}\u{1F4BB} #FrameInGoa";
+      return "Landed my Hacker House Goa 2026 profile frame \u{1F334}\u{1F4BB}";
     }
     const name = (nameInput.value || "").trim();
     const title = (titleInput.value || "Chief Vibes Officer").trim();
-    return `${name ? name + "’s" : "My"} Hacker House Goa 2026 Builder ID is live — ${title}, reporting for duty \u{1F334} #FrameInGoa`;
+    return `${name ? name + "’s" : "My"} Hacker House Goa 2026 Builder ID is live — ${title}, reporting for duty \u{1F334}`;
   }
 
   shareBtn.addEventListener("click", () => {
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob((blob) => {
       if (!blob) return;
-      const text = buildCaption();
-      const file = new File([blob], "hhgoa2026.png", { type: "image/png" });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: "Hacker House Goa 2026", text });
-          toast("Shared! See you in Goa \u{1F334}");
-          return;
-        } catch (err) {
-          if (err && err.name === "AbortError") return;
-        }
-      }
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -681,9 +700,10 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
 
-      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(location.origin)}`;
+      const text = buildCaption();
+      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=FrameInGoa&url=${encodeURIComponent(location.origin)}`;
       window.open(intent, "_blank", "noopener");
-      toast("Image downloaded — attach it to your tweet \u{1F4CE}");
+      toast("Image downloaded — attach it on X \u{1F4CE}");
     }, "image/png");
   });
 
