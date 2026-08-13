@@ -837,10 +837,41 @@
   }
 
   shareBtn.addEventListener("click", () => {
-    const text = buildCaption();
-    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=FrameInGoa&url=${encodeURIComponent(location.origin)}`;
-    window.open(intent, "_blank", "noopener");
-    toast("Opening X — don't forget to attach your download! \u{1F334}");
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const text = buildCaption();
+      const filename = `hhgoa2026-${state.format === "A" ? "frame" : "id-card"}.png`;
+      const file = new File([blob], filename, { type: "image/png" });
+
+      // Primary path: the OS share sheet can attach the actual generated
+      // image to X (or any app the user picks) — this is the only way a
+      // web page can hand X a real file instead of just a link.
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "Hacker House Goa 2026", text });
+          toast("Shared! See you in Goa \u{1F334}");
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      // Fallback: X's web composer has no API for attaching an image from a
+      // page, so download the graphic and open the composer with the
+      // caption ready — attach the downloaded file in one extra tap.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=FrameInGoa`;
+      window.open(intent, "_blank", "noopener");
+      toast("Image downloaded — attach it to your tweet on X \u{1F4CE}");
+    }, "image/png");
   });
 
   /* ---------------- init ---------------- */
