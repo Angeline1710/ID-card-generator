@@ -2,31 +2,13 @@
   "use strict";
 
   /* ---------------- constants ---------------- */
-  const THEMES = {
-    classic: {
-      green: "#0b5c34", greenDeep: "#073820", greenLight: "#0f7a45",
-      yellow: "#ffd400", yellowSoft: "#ffe873",
-      pink: "#ff2f92", pinkDeep: "#d6127a",
-      cream: "#fff8e7", ink: "#06331e",
-    },
-    sunset: {
-      green: "#7a2e0f", greenDeep: "#3d1204", greenLight: "#a8481c",
-      yellow: "#ffb703", yellowSoft: "#ffd166",
-      pink: "#ff3d5a", pinkDeep: "#c8102e",
-      cream: "#fff3e0", ink: "#3d1204",
-    },
-    midnight: {
-      green: "#1b1035", greenDeep: "#0d0720", greenLight: "#2e1a55",
-      yellow: "#ffd400", yellowSoft: "#ffe873",
-      pink: "#00e5ff", pinkDeep: "#00a8bf",
-      cream: "#f1e9ff", ink: "#0d0720",
-    },
-    beach: {
-      green: "#0a4d68", greenDeep: "#052733", greenLight: "#0f6f94",
-      yellow: "#ffd166", yellowSoft: "#ffe29a",
-      pink: "#ff6b9d", pinkDeep: "#e0447a",
-      cream: "#eaf6ff", ink: "#052733",
-    },
+  // BASE is the site's fixed interface palette — used for every canvas element
+  // except the ring/border that wraps the photo, which follows the chosen frame style.
+  const BASE = {
+    green: "#0b5c34", greenDeep: "#073820", greenLight: "#0f7a45",
+    yellow: "#ffd400", yellowSoft: "#ffe873",
+    pink: "#ff2f92", pinkDeep: "#d6127a",
+    cream: "#fff8e7", ink: "#06331e",
   };
 
   const TITLE_ADJ = ["Chief", "Head of", "VP of", "Director of", "Founding", "Lead", "Minister of", "Senior", "Global"];
@@ -37,9 +19,134 @@
     "Whiteboard Poetry", "WiFi Diplomacy", "Deploy Fridays"
   ];
 
-  // BASE is the site's fixed interface palette — used for every canvas element
-  // except the ring/border that wraps the photo, which follows the chosen theme.
-  const BASE = THEMES.classic;
+  /* ---------------- frame motif glyphs ---------------- */
+  // Small, bold, filled icons — no thin hairlines — so they stay crisp at export size.
+  function glyphPalm(c, size, color) {
+    c.save();
+    c.fillStyle = color;
+    c.translate(0, size * 0.12);
+    c.scale(size / 40, size / 40);
+    for (let i = -2; i <= 2; i++) {
+      c.save();
+      c.rotate(i * 0.36);
+      c.beginPath();
+      c.ellipse(0, -15, 4.6, 15, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+    }
+    c.beginPath();
+    c.arc(0, 0, 4.5, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  function glyphSurfboard(c, size, color) {
+    c.save();
+    c.fillStyle = color;
+    c.scale(size / 40, size / 40);
+    c.beginPath();
+    c.ellipse(0, 0, 7, 20, 0, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = "rgba(0,0,0,0.28)";
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(0, -16);
+    c.lineTo(0, 16);
+    c.stroke();
+    c.restore();
+  }
+
+  function glyphWave(c, size, color) {
+    c.save();
+    c.strokeStyle = color;
+    c.lineWidth = size * 0.16;
+    c.lineCap = "round";
+    c.scale(size / 40, size / 40);
+    c.beginPath();
+    c.moveTo(-17, 5);
+    c.quadraticCurveTo(-8.5, -10, 0, 5);
+    c.quadraticCurveTo(8.5, 20, 17, 5);
+    c.stroke();
+    c.restore();
+  }
+
+  function glyphFlag(c, size, color) {
+    c.save();
+    c.fillStyle = color;
+    c.scale(size / 40, size / 40);
+    c.beginPath();
+    c.moveTo(0, -19);
+    c.lineTo(15, 0);
+    c.lineTo(0, 5);
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  function glyphMedallion(c, size, color) {
+    c.save();
+    c.fillStyle = color;
+    c.scale(size / 40, size / 40);
+    for (let i = 0; i < 4; i++) {
+      c.save();
+      c.rotate((Math.PI / 2) * i);
+      c.beginPath();
+      c.ellipse(0, -10, 5.5, 10, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+    }
+    c.beginPath();
+    c.arc(0, 0, 5.5, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  function glyphDot(c, size, color) {
+    c.save();
+    c.fillStyle = color;
+    c.beginPath();
+    c.arc(0, 0, size * 0.15, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  // Four selectable frame styles: each pairs a color story with a repeating
+  // icon motif drawn directly on the ring/border around the photo.
+  const FRAME_STYLES = {
+    palm: {
+      label: "Palm Grove", emoji: "\u{1F334}",
+      primary: "#ffd400", secondary: "#fff8e7",
+      glyphs: [
+        { fn: glyphPalm, color: "#fff8e7" },
+        { fn: glyphDot, color: "#ffd400" },
+      ],
+    },
+    surf: {
+      label: "Surf Line", emoji: "\u{1F3C4}",
+      primary: "#ffd166", secondary: "#ff6b9d",
+      glyphs: [
+        { fn: glyphSurfboard, color: "#ffd166" },
+        { fn: glyphWave, color: "#eaf6ff" },
+      ],
+    },
+    paisley: {
+      label: "Sunset Paisley", emoji: "✳️",
+      primary: "#ffb703", secondary: "#ff3d5a",
+      glyphs: [
+        { fn: glyphMedallion, color: "#ffb703" },
+        { fn: glyphDot, color: "#ff3d5a" },
+      ],
+    },
+    bunting: {
+      label: "Bunting Flags", emoji: "\u{1F389}",
+      primary: "#ff2f92", secondary: "#ffd400",
+      glyphs: [
+        { fn: glyphFlag, color: "#ff2f92" },
+        { fn: glyphFlag, color: "#ffd400" },
+        { fn: glyphDot, color: "#fff8e7" },
+      ],
+    },
+  };
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const randomTitle = () => `${pick(TITLE_ADJ)} ${pick(TITLE_NOUN)}`;
@@ -53,7 +160,7 @@
   /* ---------------- state ---------------- */
   const state = {
     format: "A",
-    theme: "classic",
+    theme: "palm",
     img: null,
     transform: { A: null, B: null },
     idCode: randomIdCode(),
@@ -272,6 +379,55 @@
     ctx.restore();
   }
 
+  // Places a style's glyphs evenly around a circle — used for the PFP frame ring.
+  function drawIconRing(cx, cy, radius, style, count, size) {
+    const glyphs = style.glyphs;
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2;
+      const g = glyphs[i % glyphs.length];
+      ctx.save();
+      ctx.translate(cx + radius * Math.sin(a), cy - radius * Math.cos(a));
+      ctx.rotate(a);
+      g.fn(ctx, size, g.color);
+      ctx.restore();
+    }
+  }
+
+  // Places a style's glyphs at the corners + edge-midpoints of a rect — used
+  // for the Builder ID card border, so accents frame the photo without
+  // crowding the name/role text underneath. The last glyph in a style is
+  // treated as the small "accent" mark and used at the top/bottom midpoints;
+  // the rest cycle through the four corners.
+  function drawCornerOrnaments(win, style, size) {
+    const glyphs = style.glyphs;
+    const cornerGlyphs = glyphs.length > 2 ? glyphs.slice(0, -1) : [glyphs[0]];
+    const midGlyph = glyphs[glyphs.length - 1];
+    const pad = size * 0.62;
+
+    [
+      { x: win.x - pad, y: win.y - pad },
+      { x: win.x + win.w + pad, y: win.y - pad },
+      { x: win.x - pad, y: win.y + win.h + pad },
+      { x: win.x + win.w + pad, y: win.y + win.h + pad },
+    ].forEach((p, i) => {
+      const g = cornerGlyphs[i % cornerGlyphs.length];
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      g.fn(ctx, size, g.color);
+      ctx.restore();
+    });
+
+    [
+      { x: win.x + win.w / 2, y: win.y - pad },
+      { x: win.x + win.w / 2, y: win.y + win.h + pad },
+    ].forEach((p) => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      midGlyph.fn(ctx, size, midGlyph.color);
+      ctx.restore();
+    });
+  }
+
   function pillBadge(cx, cy, w, h, rotateDeg, bg, textColor, text, font) {
     ctx.save();
     ctx.translate(cx, cy);
@@ -303,7 +459,7 @@
   /* ---------------- format A: PFP frame ---------------- */
   function drawFrameA() {
     const COLORS = BASE;
-    const RING = THEMES[state.theme];
+    const RING = FRAME_STYLES[state.theme];
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -333,19 +489,19 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r + 9, 0, Math.PI * 2);
-    ctx.lineWidth = 18;
-    ctx.strokeStyle = RING.yellow;
+    ctx.lineWidth = 14;
+    ctx.strokeStyle = RING.primary;
     ctx.stroke();
     ctx.restore();
 
-    dashedCircle(cx, cy, r + 34, { color: RING.pink, width: 5, dash: [4, 14] });
-    dashedCircle(cx, cy, r + 52, { color: RING.yellow, width: 3, dash: [2, 10] });
+    dashedCircle(cx, cy, r + 26, { color: RING.secondary, width: 3, dash: [2, 9] });
+    drawIconRing(cx, cy, r + 50, RING, 9, 34);
 
-    drawArcText("HACKER HOUSE", cx, cy, r + 74, 0, {
-      font: `700 40px 'Baloo 2'`, color: COLORS.yellow, letterSpacing: 6,
+    drawArcText("HACKER HOUSE", cx, cy, r + 76, 0, {
+      font: `700 37px 'Baloo 2'`, color: COLORS.yellow, letterSpacing: 6,
     });
-    drawArcText("GOA · 2026", cx, cy, r + 74, 180, {
-      font: `700 36px 'Space Mono'`, color: COLORS.cream, letterSpacing: 8, flip: true,
+    drawArcText("GOA · 2026", cx, cy, r + 76, 180, {
+      font: `700 33px 'Space Mono'`, color: COLORS.cream, letterSpacing: 8, flip: true,
     });
 
     pillBadge(cx + r * 0.66, cy + r * 0.7, 168, 60, -8, COLORS.pink, COLORS.cream, "#FrameInGoa", `700 24px 'Baloo 2'`);
@@ -354,7 +510,7 @@
   /* ---------------- format B: builder ID card ---------------- */
   function drawCardB() {
     const COLORS = BASE;
-    const RING = THEMES[state.theme];
+    const RING = FRAME_STYLES[state.theme];
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -415,16 +571,17 @@
     ctx.save();
     roundedRectPath(ctx, win.x, win.y, win.w, win.h, win.r);
     ctx.lineWidth = 12;
-    ctx.strokeStyle = RING.yellow;
+    ctx.strokeStyle = RING.primary;
     ctx.stroke();
     ctx.restore();
     ctx.save();
     roundedRectPath(ctx, win.x - 14, win.y - 14, win.w + 28, win.h + 28, win.r + 14);
     ctx.setLineDash([3, 11]);
     ctx.lineWidth = 3;
-    ctx.strokeStyle = RING.pink;
+    ctx.strokeStyle = RING.secondary;
     ctx.stroke();
     ctx.restore();
+    drawCornerOrnaments(win, RING, 38);
 
     // name
     const name = (nameInput.value || "Your Name").trim() || "Your Name";
