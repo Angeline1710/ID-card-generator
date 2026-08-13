@@ -1,272 +1,76 @@
 (() => {
   "use strict";
 
-  /* ---------------- constants ---------------- */
-  // BASE is the site's fixed interface palette — used for every canvas element
-  // except the ring/border that wraps the photo, which follows the chosen frame style.
+  /* ================================================================
+     HACKER HOUSE GOA 2026 — Desi Beach-Themed ID & PFP Generator
+     ================================================================ */
+
+  /* ---------------- Color Palette (Desi Beachy) ---------------- */
   const BASE = {
-    green: "#0b5c34", greenDeep: "#073820", greenLight: "#0f7a45",
-    yellow: "#ffd400", yellowSoft: "#ffe873",
-    pink: "#ff2f92", pinkDeep: "#d6127a",
-    cream: "#fff8e7", ink: "#06331e",
+    greenDeep:   "#1A3A2A",
+    green:       "#2B5B3C",
+    greenMedium: "#4A7C5C",
+    greenLight:  "#5C8F6A",
+    greenPale:   "#7BAF8A",
+    gold:        "#D4A843",
+    goldLight:   "#E8C96A",
+    goldBright:  "#FFD400",
+    cream:       "#F5F0E1",
+    creamDark:   "#E8DFC8",
+    coral:       "#C75C3A",
+    coralLight:  "#E07750",
+    pink:        "#D94F6B",
+    sand:        "#E8D5A8",
+    sandLight:   "#F0E6CC",
+    sandDark:    "#C4B48A",
+    ink:         "#1A2E1F",
+    white:       "#FFFFFF",
+    brown:       "#6B5B3A",
+    brownLight:  "#8A7550",
+    brownDark:   "#4A3D28",
+    oceanTeal:   "#7AADA8",
+    oceanMid:    "#5A9590",
+    oceanDark:   "#4A8580",
+    oceanDeep:   "#3A7570",
   };
 
-  const TITLE_ADJ = ["Chief", "Head of", "VP of", "Director of", "Founding", "Lead", "Minister of", "Senior", "Global"];
+  /* ---------------- Fun Titles ---------------- */
+  const TITLE_ADJ = [
+    "Chief", "Head of", "VP of", "Director of", "Founding",
+    "Lead", "Minister of", "Senior", "Global", "Supreme",
+  ];
   const TITLE_NOUN = [
-    "Vibes", "Chaos Engineering", "Midnight Debugging", "Snack Logistics", "Bug Whispering",
-    "Duct-Tape Architecture", "Caffeine Ops", "Merge Conflicts", "Beach Deploys", "Ctrl+Z Recovery",
-    "Scope Creep", "Rubber Duck Relations", "Sunset Standups", "Localhost Diplomacy", "Hackathon Survival",
-    "Whiteboard Poetry", "WiFi Diplomacy", "Deploy Fridays"
+    "Vibes", "Chaos Engineering", "Midnight Debugging",
+    "Snack Logistics", "Bug Whispering", "Duct-Tape Architecture",
+    "Caffeine Ops", "Merge Conflicts", "Beach Deploys",
+    "Ctrl+Z Recovery", "Scope Creep", "Rubber Duck Relations",
+    "Sunset Standups", "Localhost Diplomacy", "Hackathon Survival",
+    "Whiteboard Poetry", "WiFi Diplomacy", "Deploy Fridays",
   ];
 
-  /* ---------------- frame motif glyphs ---------------- */
-  // Small, bold, filled icons — no thin hairlines — so they stay crisp at export size.
-  function glyphPalm(c, size, color) {
-    c.save();
-    c.fillStyle = color;
-    c.translate(0, size * 0.12);
-    c.scale(size / 40, size / 40);
-    for (let i = -2; i <= 2; i++) {
-      c.save();
-      c.rotate(i * 0.36);
-      c.beginPath();
-      c.ellipse(0, -15, 4.6, 15, 0, 0, Math.PI * 2);
-      c.fill();
-      c.restore();
-    }
-    c.beginPath();
-    c.arc(0, 0, 4.5, 0, Math.PI * 2);
-    c.fill();
-    c.restore();
-  }
-
-  function glyphSurfboard(c, size, color) {
-    c.save();
-    c.fillStyle = color;
-    c.scale(size / 40, size / 40);
-    c.beginPath();
-    c.ellipse(0, 0, 7, 20, 0, 0, Math.PI * 2);
-    c.fill();
-    c.strokeStyle = "rgba(0,0,0,0.28)";
-    c.lineWidth = 2.2;
-    c.beginPath();
-    c.moveTo(0, -16);
-    c.lineTo(0, 16);
-    c.stroke();
-    c.restore();
-  }
-
-  function glyphWave(c, size, color) {
-    c.save();
-    c.strokeStyle = color;
-    c.lineWidth = size * 0.16;
-    c.lineCap = "round";
-    c.scale(size / 40, size / 40);
-    c.beginPath();
-    c.moveTo(-17, 5);
-    c.quadraticCurveTo(-8.5, -10, 0, 5);
-    c.quadraticCurveTo(8.5, 20, 17, 5);
-    c.stroke();
-    c.restore();
-  }
-
-  function glyphFlag(c, size, color) {
-    c.save();
-    c.fillStyle = color;
-    c.scale(size / 40, size / 40);
-    c.beginPath();
-    c.moveTo(0, -19);
-    c.lineTo(15, 0);
-    c.lineTo(0, 5);
-    c.closePath();
-    c.fill();
-    c.restore();
-  }
-
-  function glyphMedallion(c, size, color) {
-    c.save();
-    c.fillStyle = color;
-    c.scale(size / 40, size / 40);
-    for (let i = 0; i < 4; i++) {
-      c.save();
-      c.rotate((Math.PI / 2) * i);
-      c.beginPath();
-      c.ellipse(0, -10, 5.5, 10, 0, 0, Math.PI * 2);
-      c.fill();
-      c.restore();
-    }
-    c.beginPath();
-    c.arc(0, 0, 5.5, 0, Math.PI * 2);
-    c.fill();
-    c.restore();
-  }
-
-  function glyphDot(c, size, color) {
-    c.save();
-    c.fillStyle = color;
-    c.beginPath();
-    c.arc(0, 0, size * 0.15, 0, Math.PI * 2);
-    c.fill();
-    c.restore();
-  }
-
-  // Four selectable frame styles: each pairs a color story with a repeating
-  // icon motif drawn directly on the ring/border around the photo.
-  const FRAME_STYLES = {
-    palm: {
-      label: "Palm Grove", emoji: "\u{1F334}",
-      primary: "#ffd400", secondary: "#fff8e7",
-      glyphs: [
-        { fn: glyphPalm, color: "#fff8e7" },
-        { fn: glyphDot, color: "#ffd400" },
-      ],
-    },
-    surf: {
-      label: "Surf Line", emoji: "\u{1F3C4}",
-      primary: "#ffd166", secondary: "#ff6b9d",
-      glyphs: [
-        { fn: glyphSurfboard, color: "#ffd166" },
-        { fn: glyphWave, color: "#eaf6ff" },
-      ],
-    },
-    paisley: {
-      label: "Sunset Paisley", emoji: "✳️",
-      primary: "#ffb703", secondary: "#ff3d5a",
-      glyphs: [
-        { fn: glyphMedallion, color: "#ffb703" },
-        { fn: glyphDot, color: "#ff3d5a" },
-      ],
-    },
-    bunting: {
-      label: "Bunting Flags", emoji: "\u{1F389}",
-      primary: "#ff2f92", secondary: "#ffd400",
-      glyphs: [
-        { fn: glyphFlag, color: "#ff2f92" },
-        { fn: glyphFlag, color: "#ffd400" },
-        { fn: glyphDot, color: "#fff8e7" },
-      ],
-    },
-  };
-
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
   const randomTitle = () => `${pick(TITLE_ADJ)} ${pick(TITLE_NOUN)}`;
   const randomIdCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const ch = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let s = "";
-    for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 4; i++) s += ch[Math.floor(Math.random() * ch.length)];
     return `HHGOA26-${s}`;
   };
 
-  /* ---------------- state ---------------- */
-  const state = {
-    format: "A",
-    theme: "palm",
-    img: null,
-    transform: { A: null, B: null },
-    idCode: randomIdCode(),
-    dragging: false,
-    pointers: new Map(),
-    pinchStartDist: 0,
-    pinchStartZoom: 1,
+  /* ---------------- Frame Ring Themes ---------------- */
+  const FRAME_STYLES = {
+    palm:    { ring: BASE.gold,      accent: BASE.cream,     label: "Classic Gold" },
+    surf:    { ring: BASE.coral,     accent: "#FFE0B2",      label: "Sunset Coral" },
+    paisley: { ring: BASE.oceanTeal, accent: BASE.cream,     label: "Ocean Teal" },
+    bunting: { ring: BASE.pink,      accent: BASE.goldBright, label: "Festival" },
   };
 
-  /* ---------------- dom ---------------- */
-  const canvas = document.getElementById("stage");
-  const ctx = canvas.getContext("2d");
-  const stageShell = document.querySelector(".stage-shell");
-  const dropHint = document.getElementById("dropHint");
-  const fileInput = document.getElementById("fileInput");
-  const stageControls = document.getElementById("stageControls");
-  const changePhotoBtn = document.getElementById("changePhotoBtn");
-  const zoomSlider = document.getElementById("zoomSlider");
-  const downloadBtn = document.getElementById("downloadBtn");
-  const shareBtn = document.getElementById("shareBtn");
-  const shareHint = document.getElementById("shareHint");
-  const formatBFields = document.getElementById("formatBFields");
-  const nameInput = document.getElementById("nameInput");
-  const roleInput = document.getElementById("roleInput");
-  const titleInput = document.getElementById("titleInput");
-  const shuffleTitleBtn = document.getElementById("shuffleTitleBtn");
-  const toastEl = document.getElementById("toast");
-  const themeSwatches = document.querySelectorAll(".theme-swatch");
+  /* ================================================================
+     BEACH ELEMENT DRAWING FUNCTIONS
+     ================================================================ */
 
-  titleInput.value = randomTitle();
-
-  /* ---------------- toast ---------------- */
-  let toastTimer = null;
-  function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3200);
-  }
-
-  /* ---------------- theme (ring/border around the photo only) ---------------- */
-  themeSwatches.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      themeSwatches.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      state.theme = btn.dataset.theme;
-      render();
-    });
-  });
-
-  /* ---------------- geometry helpers ---------------- */
-  function getWindowRect(format) {
-    if (format === "A") {
-      return { x: 120, y: 120, w: 840, h: 840, shape: "circle" };
-    }
-    return { x: 210, y: 300, w: 660, h: 660, shape: "rounded", r: 36 };
-  }
-
-  function computeCoverBase(img, w, h) {
-    return Math.max(w / img.width, h / img.height);
-  }
-
-  function getTransform(format) {
-    if (!state.transform[format] && state.img) {
-      const win = getWindowRect(format);
-      const base = computeCoverBase(state.img, win.w, win.h);
-      const dispW = state.img.width * base;
-      const dispH = state.img.height * base;
-      state.transform[format] = {
-        zoom: 1,
-        offsetX: (win.w - dispW) / 2,
-        offsetY: (win.h - dispH) / 2,
-      };
-    }
-    return state.transform[format];
-  }
-
-  function clampTransform(format) {
-    const t = getTransform(format);
-    if (!t) return;
-    const win = getWindowRect(format);
-    const eff = computeCoverBase(state.img, win.w, win.h) * t.zoom;
-    const dispW = state.img.width * eff;
-    const dispH = state.img.height * eff;
-    const minX = Math.min(0, win.w - dispW);
-    const minY = Math.min(0, win.h - dispH);
-    t.offsetX = Math.min(0, Math.max(minX, t.offsetX));
-    t.offsetY = Math.min(0, Math.max(minY, t.offsetY));
-  }
-
-  function applyZoom(format, newZoom) {
-    const t = getTransform(format);
-    if (!t) return;
-    const win = getWindowRect(format);
-    const base = computeCoverBase(state.img, win.w, win.h);
-    const oldEff = base * t.zoom;
-    const newEff = base * newZoom;
-    const cx = win.w / 2, cy = win.h / 2;
-    t.offsetX = cx - (cx - t.offsetX) * (newEff / oldEff);
-    t.offsetY = cy - (cy - t.offsetY) * (newEff / oldEff);
-    t.zoom = newZoom;
-    clampTransform(format);
-  }
-
-  /* ---------------- drawing primitives ---------------- */
-  function roundedRectPath(c, x, y, w, h, r) {
+  /* ---- Rounded Rect Path ---- */
+  function rrect(c, x, y, w, h, r) {
     c.beginPath();
     c.moveTo(x + r, y);
     c.arcTo(x + w, y, x + w, y + h, r);
@@ -276,26 +80,606 @@
     c.closePath();
   }
 
-  function drawPhotoInWindow(format, win) {
-    const t = getTransform(format);
-    if (!t || !state.img) return;
-    ctx.save();
-    if (win.shape === "circle") {
-      ctx.beginPath();
-      ctx.arc(win.x + win.w / 2, win.y + win.h / 2, win.w / 2, 0, Math.PI * 2);
-      ctx.clip();
-    } else {
-      roundedRectPath(ctx, win.x, win.y, win.w, win.h, win.r);
-      ctx.clip();
+  /* ---- Palm Tree ---- */
+  function drawPalmTree(c, x, baseY, height, lean, mirror) {
+    c.save();
+    c.translate(x, baseY);
+    if (mirror) c.scale(-1, 1);
+
+    const topX = lean * height * 0.28;
+    const topY = -height;
+
+    // Trunk
+    c.strokeStyle = BASE.brown;
+    c.lineWidth = Math.max(5, height * 0.032);
+    c.lineCap = "round";
+    c.beginPath();
+    c.moveTo(0, 0);
+    c.quadraticCurveTo(lean * height * 0.12, -height * 0.5, topX, topY);
+    c.stroke();
+
+    // Trunk texture
+    c.strokeStyle = "rgba(0,0,0,0.12)";
+    c.lineWidth = 1;
+    for (let i = 0.12; i < 0.88; i += 0.07) {
+      const px = lean * height * 0.12 * 2 * i * (1 - i) * 2 + topX * i * i;
+      const py = -height * i;
+      c.beginPath();
+      c.moveTo(px - height * 0.022, py);
+      c.lineTo(px + height * 0.022, py);
+      c.stroke();
     }
-    const base = computeCoverBase(state.img, win.w, win.h);
-    const eff = base * t.zoom;
-    const dw = state.img.width * eff;
-    const dh = state.img.height * eff;
-    ctx.drawImage(state.img, win.x + t.offsetX, win.y + t.offsetY, dw, dh);
-    ctx.restore();
+
+    // Fronds
+    const fronds = [
+      { a: -155, l: 0.50, d: 38 },
+      { a: -130, l: 0.55, d: 28 },
+      { a: -105, l: 0.52, d: 18 },
+      { a:  -75, l: 0.50, d: 22 },
+      { a:  -45, l: 0.46, d: 32 },
+      { a:  -20, l: 0.40, d: 40 },
+    ];
+    fronds.forEach(f => {
+      const rad = (f.a * Math.PI) / 180;
+      const fLen = f.l * height;
+      const ex = Math.cos(rad) * fLen;
+      const ey = Math.sin(rad) * fLen + f.d;
+      c.save();
+      c.translate(topX, topY);
+
+      // Leaf fill
+      c.fillStyle = BASE.greenMedium;
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(ex * 0.35 - 10, ey * 0.35 - 14, ex, ey);
+      c.quadraticCurveTo(ex * 0.35 + 8, ey * 0.35 + 4, 0, 0);
+      c.fill();
+
+      // Depth overlay
+      c.fillStyle = "rgba(26,58,42,0.18)";
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(ex * 0.35 + 5, ey * 0.35 + 1, ex, ey);
+      c.quadraticCurveTo(ex * 0.35 + 8, ey * 0.35 + 4, 0, 0);
+      c.fill();
+
+      // Midrib
+      c.strokeStyle = BASE.greenDeep;
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(ex * 0.5, ey * 0.3, ex, ey);
+      c.stroke();
+
+      c.restore();
+    });
+
+    // Coconuts
+    c.fillStyle = BASE.brownDark;
+    [[-4, 5], [4, 3], [0, 8]].forEach(([dx, dy]) => {
+      c.beginPath();
+      c.arc(topX + dx, topY + dy, height * 0.018, 0, Math.PI * 2);
+      c.fill();
+    });
+
+    // Base grass
+    c.fillStyle = BASE.greenMedium;
+    for (let i = -3; i <= 3; i++) {
+      c.beginPath();
+      c.moveTo(i * 5, 0);
+      c.quadraticCurveTo(i * 7 - 2, -16, i * 3, -26);
+      c.quadraticCurveTo(i * 7 + 2, -16, i * 5 + 3, 0);
+      c.fill();
+    }
+    c.restore();
   }
 
+  /* ---- Sun with Clouds ---- */
+  function drawSunClouds(c, cx, cy, r) {
+    c.save();
+    // Glow
+    const g = c.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3);
+    g.addColorStop(0, "rgba(232,201,106,0.25)");
+    g.addColorStop(1, "rgba(232,201,106,0)");
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(cx, cy, r * 3, 0, Math.PI * 2);
+    c.fill();
+
+    // Body
+    c.fillStyle = BASE.gold;
+    c.beginPath();
+    c.arc(cx, cy, r, 0, Math.PI * 2);
+    c.fill();
+
+    // Rays
+    c.strokeStyle = BASE.gold;
+    c.lineWidth = 2.2;
+    c.lineCap = "round";
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(a) * (r + 5), cy + Math.sin(a) * (r + 5));
+      c.lineTo(cx + Math.cos(a) * (r + 13), cy + Math.sin(a) * (r + 13));
+      c.stroke();
+    }
+
+    // Clouds
+    c.fillStyle = BASE.cream;
+    const cx2 = cx + r * 1.1, cy2 = cy + r * 0.5;
+    c.beginPath();
+    c.arc(cx2, cy2, r * 0.45, 0, Math.PI * 2);
+    c.arc(cx2 + r * 0.4, cy2 + r * 0.08, r * 0.32, 0, Math.PI * 2);
+    c.arc(cx2 - r * 0.32, cy2 + r * 0.1, r * 0.28, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  /* ---- Birds (V shapes) ---- */
+  function drawBirds(c, pts) {
+    c.save();
+    c.strokeStyle = BASE.ink;
+    c.lineWidth = 1.8;
+    c.lineCap = "round";
+    pts.forEach(([x, y, s]) => {
+      c.beginPath();
+      c.moveTo(x - s, y + s * 0.35);
+      c.quadraticCurveTo(x - s * 0.3, y - s * 0.35, x, y);
+      c.quadraticCurveTo(x + s * 0.3, y - s * 0.35, x + s, y + s * 0.35);
+      c.stroke();
+    });
+    c.restore();
+  }
+
+  /* ---- Mountains ---- */
+  function drawMountains(c, baseY, W) {
+    c.save();
+    // Far range
+    c.fillStyle = BASE.greenMedium;
+    c.globalAlpha = 0.45;
+    c.beginPath();
+    c.moveTo(0, baseY + 20);
+    c.quadraticCurveTo(W * 0.12, baseY - 80, W * 0.28, baseY + 10);
+    c.quadraticCurveTo(W * 0.45, baseY - 50, W * 0.65, baseY + 5);
+    c.quadraticCurveTo(W * 0.8, baseY - 30, W, baseY + 15);
+    c.lineTo(W, baseY + 40);
+    c.lineTo(0, baseY + 40);
+    c.fill();
+
+    // Near range
+    c.fillStyle = BASE.green;
+    c.globalAlpha = 0.5;
+    c.beginPath();
+    c.moveTo(0, baseY + 30);
+    c.quadraticCurveTo(W * 0.08, baseY - 30, W * 0.22, baseY + 15);
+    c.quadraticCurveTo(W * 0.38, baseY - 15, W * 0.52, baseY + 20);
+    c.quadraticCurveTo(W * 0.72, baseY - 25, W, baseY + 18);
+    c.lineTo(W, baseY + 40);
+    c.lineTo(0, baseY + 40);
+    c.fill();
+    c.restore();
+  }
+
+  /* ---- Ocean ---- */
+  function drawOcean(c, startY, endY, W) {
+    c.save();
+    // Wavy top edge shape
+    c.beginPath();
+    c.moveTo(0, startY + 6);
+    for (let x = 0; x <= W; x += 4) {
+      c.lineTo(x, startY + Math.sin(x * 0.018) * 7 + Math.sin(x * 0.005) * 4);
+    }
+    c.lineTo(W, endY);
+    c.lineTo(0, endY);
+    c.closePath();
+
+    const g = c.createLinearGradient(0, startY, 0, endY);
+    g.addColorStop(0, BASE.oceanTeal);
+    g.addColorStop(0.5, BASE.oceanMid);
+    g.addColorStop(1, BASE.oceanDark);
+    c.fillStyle = g;
+    c.fill();
+
+    // Wave lines
+    c.strokeStyle = "rgba(255,255,255,0.18)";
+    c.lineWidth = 1.8;
+    c.lineCap = "round";
+    for (let row = 0; row < 6; row++) {
+      const y = startY + ((endY - startY) / 6) * row + 18;
+      c.beginPath();
+      for (let x = 0; x <= W; x += 3) {
+        const wy = y + Math.sin((x + row * 70) * 0.022) * 4 +
+                        Math.sin((x + row * 35) * 0.008) * 2;
+        if (x === 0) c.moveTo(x, wy); else c.lineTo(x, wy);
+      }
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  /* ---- Sand Beach ---- */
+  function drawSand(c, startY, endY, W) {
+    c.save();
+    const g = c.createLinearGradient(0, startY, 0, endY);
+    g.addColorStop(0, BASE.sand);
+    g.addColorStop(0.35, BASE.sandLight);
+    g.addColorStop(1, BASE.creamDark);
+    c.fillStyle = g;
+
+    c.beginPath();
+    c.moveTo(0, startY - 2);
+    for (let x = 0; x <= W; x += 8) {
+      c.lineTo(x, startY + Math.sin(x * 0.012) * 6 - 2);
+    }
+    c.lineTo(W, endY);
+    c.lineTo(0, endY);
+    c.closePath();
+    c.fill();
+
+    // Texture dots
+    c.fillStyle = "rgba(170,150,110,0.12)";
+    for (let i = 0; i < 50; i++) {
+      c.beginPath();
+      c.arc(Math.random() * W, startY + 10 + Math.random() * (endY - startY - 10),
+            1 + Math.random() * 1.5, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+  }
+
+  /* ---- Sailboat ---- */
+  function drawSailboat(c, x, y, s) {
+    c.save();
+    c.translate(x, y);
+    c.scale(s, s);
+
+    // Hull
+    c.fillStyle = BASE.brownDark;
+    c.beginPath();
+    c.moveTo(-16, 0);
+    c.quadraticCurveTo(-12, 9, 0, 11);
+    c.quadraticCurveTo(12, 9, 16, 0);
+    c.closePath();
+    c.fill();
+
+    // Mast
+    c.strokeStyle = BASE.brownDark;
+    c.lineWidth = 1.8;
+    c.beginPath();
+    c.moveTo(0, -1);
+    c.lineTo(0, -32);
+    c.stroke();
+
+    // Sail
+    c.fillStyle = BASE.cream;
+    c.beginPath();
+    c.moveTo(0, -30);
+    c.lineTo(15, -4);
+    c.lineTo(0, -2);
+    c.closePath();
+    c.fill();
+
+    // Flag
+    c.fillStyle = BASE.coral;
+    c.beginPath();
+    c.moveTo(0, -32);
+    c.lineTo(7, -29);
+    c.lineTo(0, -26);
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  /* ---- Direction Sign Post ---- */
+  function drawSignPost(c, x, baseY, s) {
+    c.save();
+    c.translate(x, baseY);
+    c.scale(s, s);
+
+    // Post
+    c.fillStyle = BASE.brown;
+    c.fillRect(-3.5, -115, 7, 125);
+
+    // Cross texture on post
+    c.strokeStyle = "rgba(0,0,0,0.1)";
+    c.lineWidth = 0.8;
+    for (let py = -105; py < 5; py += 8) {
+      c.beginPath();
+      c.moveTo(-3.5, py);
+      c.lineTo(3.5, py);
+      c.stroke();
+    }
+
+    const signs = [
+      { y: -100, text: "BUILD",   color: BASE.coral,       dir: -1 },
+      { y: -72,  text: "BREAK",   color: BASE.greenMedium, dir:  1 },
+      { y: -44,  text: "BREATHE", color: BASE.gold,        dir: -1 },
+    ];
+
+    signs.forEach(sg => {
+      const w = 68, h = 20, d = sg.dir;
+      const sx = d > 0 ? 4 : -4 - w;
+
+      c.fillStyle = sg.color;
+      c.beginPath();
+      if (d > 0) {
+        c.moveTo(sx, sg.y - h / 2);
+        c.lineTo(sx + w, sg.y - h / 2);
+        c.lineTo(sx + w + 10, sg.y);
+        c.lineTo(sx + w, sg.y + h / 2);
+        c.lineTo(sx, sg.y + h / 2);
+      } else {
+        c.moveTo(sx + w, sg.y - h / 2);
+        c.lineTo(sx, sg.y - h / 2);
+        c.lineTo(sx - 10, sg.y);
+        c.lineTo(sx, sg.y + h / 2);
+        c.lineTo(sx + w, sg.y + h / 2);
+      }
+      c.closePath();
+      c.fill();
+
+      // Shadow
+      c.fillStyle = "rgba(0,0,0,0.1)";
+      c.fill();
+
+      // Re-fill
+      c.fillStyle = sg.color;
+      c.fill();
+
+      c.fillStyle = BASE.cream;
+      c.font = "bold 11px 'Baloo 2',sans-serif";
+      c.textAlign = "center";
+      c.textBaseline = "middle";
+      c.fillText(sg.text, d > 0 ? sx + w / 2 + 2 : sx + w / 2 - 2, sg.y + 1);
+    });
+
+    // Base plants
+    c.fillStyle = BASE.greenMedium;
+    for (let i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(i * 5, 10);
+      c.quadraticCurveTo(i * 7, -6, i * 3, -18);
+      c.quadraticCurveTo(i * 7 + 3, -6, i * 5 + 3, 10);
+      c.fill();
+    }
+    c.restore();
+  }
+
+  /* ---- Surfboards ---- */
+  function drawSurfboards(c, x, baseY, s) {
+    c.save();
+    c.translate(x, baseY);
+    c.scale(s, s);
+
+    const boards = [
+      { x: -22, a: -12, color: BASE.greenMedium, stripe: BASE.cream },
+      { x:   0, a:  -3, color: BASE.cream,       stripe: BASE.gold },
+      { x:  22, a:   8, color: BASE.gold,         stripe: BASE.greenMedium },
+    ];
+
+    boards.forEach(b => {
+      c.save();
+      c.translate(b.x, 0);
+      c.rotate((b.a * Math.PI) / 180);
+
+      c.fillStyle = b.color;
+      c.beginPath();
+      c.ellipse(0, 0, 8, 48, 0, 0, Math.PI * 2);
+      c.fill();
+
+      c.strokeStyle = b.stripe;
+      c.lineWidth = 1.8;
+      c.beginPath();
+      c.moveTo(0, -36);
+      c.lineTo(0, 36);
+      c.stroke();
+
+      c.strokeStyle = "rgba(0,0,0,0.15)";
+      c.lineWidth = 0.8;
+      c.beginPath();
+      c.ellipse(0, 0, 8, 48, 0, 0, Math.PI * 2);
+      c.stroke();
+
+      c.restore();
+    });
+    c.restore();
+  }
+
+  /* ---- Starfish ---- */
+  function drawStarfish(c, x, y, sz) {
+    c.save();
+    c.translate(x, y);
+    c.fillStyle = BASE.coral;
+    c.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const oa = (i / 5) * Math.PI * 2 - Math.PI / 2;
+      const ia = ((i + 0.5) / 5) * Math.PI * 2 - Math.PI / 2;
+      if (i === 0) c.moveTo(Math.cos(oa) * sz, Math.sin(oa) * sz);
+      else c.lineTo(Math.cos(oa) * sz, Math.sin(oa) * sz);
+      c.lineTo(Math.cos(ia) * sz * 0.38, Math.sin(ia) * sz * 0.38);
+    }
+    c.closePath();
+    c.fill();
+
+    c.fillStyle = "rgba(255,255,255,0.25)";
+    c.beginPath();
+    c.arc(0, 0, sz * 0.15, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  /* ---- Seashell ---- */
+  function drawShell(c, x, y, sz) {
+    c.save();
+    c.translate(x, y);
+    c.fillStyle = BASE.sandDark;
+    c.beginPath();
+    c.arc(0, 0, sz, Math.PI, 0);
+    c.quadraticCurveTo(sz * 0.3, sz * 0.8, 0, sz * 0.5);
+    c.quadraticCurveTo(-sz * 0.3, sz * 0.8, -sz, 0);
+    c.fill();
+
+    c.strokeStyle = "rgba(0,0,0,0.1)";
+    c.lineWidth = 0.6;
+    for (let i = 0.2; i < 1; i += 0.25) {
+      c.beginPath();
+      c.arc(0, 0, sz * i, Math.PI, 0);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  /* ---- Tropical Plants / Leaves ---- */
+  function drawPlants(c, x, baseY, s, mirror) {
+    c.save();
+    c.translate(x, baseY);
+    if (mirror) c.scale(-1, 1);
+    c.scale(s, s);
+
+    const leaves = [
+      { a: -75, l: 50, w: 14 },
+      { a: -55, l: 62, w: 16 },
+      { a: -38, l: 48, w: 12 },
+      { a: -95, l: 42, w: 11 },
+      { a: -25, l: 35, w: 9 },
+    ];
+    leaves.forEach(lf => {
+      const rad = (lf.a * Math.PI) / 180;
+      const ex = Math.cos(rad) * lf.l;
+      const ey = Math.sin(rad) * lf.l;
+
+      c.fillStyle = BASE.greenMedium;
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(ex * 0.4 - lf.w * 0.5, ey * 0.4, ex, ey);
+      c.quadraticCurveTo(ex * 0.4 + lf.w * 0.5, ey * 0.4, 0, 0);
+      c.fill();
+
+      c.strokeStyle = BASE.greenDeep;
+      c.lineWidth = 0.8;
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.lineTo(ex, ey);
+      c.stroke();
+    });
+    c.restore();
+  }
+
+  /* ---- Flower (frangipani) ---- */
+  function drawFlower(c, x, y, sz) {
+    c.save();
+    c.translate(x, y);
+    c.fillStyle = BASE.cream;
+    for (let i = 0; i < 5; i++) {
+      c.save();
+      c.rotate((i / 5) * Math.PI * 2);
+      c.beginPath();
+      c.ellipse(0, -sz * 0.6, sz * 0.32, sz * 0.55, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+    }
+    c.fillStyle = BASE.gold;
+    c.beginPath();
+    c.arc(0, 0, sz * 0.22, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  /* ---- String Lights ---- */
+  function drawStringLights(c, x1, y1, x2, y2, count, sag) {
+    c.save();
+    // String
+    c.strokeStyle = "rgba(0,0,0,0.25)";
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(x1, y1);
+    c.quadraticCurveTo((x1 + x2) / 2, Math.max(y1, y2) + sag, x2, y2);
+    c.stroke();
+
+    const colors = [BASE.coral, BASE.gold, BASE.greenMedium, BASE.pink, BASE.cream];
+    for (let i = 0; i <= count; i++) {
+      const t = i / count;
+      const mx = x1 + (x2 - x1) * t;
+      const my = y1 + (y2 - y1) * t + sag * 4 * t * (1 - t);
+
+      c.fillStyle = colors[i % colors.length];
+      c.beginPath();
+      c.arc(mx, my + 4, 4.5, 0, Math.PI * 2);
+      c.fill();
+
+      c.strokeStyle = "rgba(0,0,0,0.08)";
+      c.lineWidth = 0.5;
+      c.beginPath();
+      c.moveTo(mx, my);
+      c.lineTo(mx, my + 2);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  /* ---- Wave Ornament (tilde decoration for tagline) ---- */
+  function drawWaveOrnament(c, x, y, w, color) {
+    c.save();
+    c.strokeStyle = color;
+    c.lineWidth = 2;
+    c.lineCap = "round";
+    c.beginPath();
+    for (let i = 0; i <= w; i += 2) {
+      const px = x + i;
+      const py = y + Math.sin((i / w) * Math.PI * 3) * 3;
+      if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.stroke();
+    c.restore();
+  }
+
+  /* ---- Wave Border ---- */
+  function drawWaveBorder(c, y, W, color, amp, wl) {
+    c.save();
+    c.strokeStyle = color;
+    c.lineWidth = 2.2;
+    c.lineCap = "round";
+    c.beginPath();
+    for (let x = 0; x <= W; x += 2) {
+      const py = y + Math.sin((x / wl) * Math.PI * 2) * amp;
+      if (x === 0) c.moveTo(x, py); else c.lineTo(x, py);
+    }
+    c.stroke();
+    c.restore();
+  }
+
+  /* ---- Pill Badge ---- */
+  function pillBadge(c, cx, cy, w, h, bg, textColor, text, font) {
+    c.save();
+    c.fillStyle = "rgba(0,0,0,0.12)";
+    rrect(c, cx - w / 2 + 2, cy - h / 2 + 3, w, h, h / 2);
+    c.fill();
+    c.fillStyle = bg;
+    rrect(c, cx - w / 2, cy - h / 2, w, h, h / 2);
+    c.fill();
+    c.strokeStyle = "rgba(0,0,0,0.08)";
+    c.lineWidth = 1;
+    c.stroke();
+    c.fillStyle = textColor;
+    c.font = font;
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillText(text, cx, cy + 1);
+    c.restore();
+  }
+
+  /* ---- Fit Text Helper ---- */
+  function fitText(text, maxW, baseSize, family, weight) {
+    let sz = baseSize;
+    ctx.font = `${weight} ${sz}px ${family}`;
+    while (ctx.measureText(text).width > maxW && sz > 14) {
+      sz -= 2;
+      ctx.font = `${weight} ${sz}px ${family}`;
+    }
+    return sz;
+  }
+
+  /* ---- Arc Text ---- */
   function drawArcText(text, cx, cy, radius, startDeg, opts) {
     const { font, color, letterSpacing = 0, flip = false } = opts;
     ctx.save();
@@ -304,7 +688,7 @@
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     const chars = text.split("");
-    const angles = chars.map((c) => (ctx.measureText(c).width + letterSpacing) / radius);
+    const angles = chars.map(ch => (ctx.measureText(ch).width + letterSpacing) / radius);
     const total = angles.reduce((a, b) => a + b, 0);
     const dir = flip ? -1 : 1;
     let angle = (startDeg * Math.PI) / 180 - (dir * total) / 2;
@@ -320,164 +704,208 @@
     ctx.restore();
   }
 
-  function dashedCircle(cx, cy, r, opts) {
-    const { color, width = 4, dash = [10, 10], rotate = 0 } = opts;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(rotate);
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.setLineDash(dash);
-    ctx.lineWidth = width;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.restore();
+  /* ---- Decorative Paisley ---- */
+  function drawPaisley(c, x, y, sz, rot) {
+    c.save();
+    c.translate(x, y);
+    c.rotate(rot);
+    c.scale(sz / 20, sz / 20);
+    c.fillStyle = BASE.gold;
+    c.globalAlpha = 0.3;
+    c.beginPath();
+    c.moveTo(0, -15);
+    c.quadraticCurveTo(12, -10, 10, 5);
+    c.quadraticCurveTo(8, 15, 0, 12);
+    c.quadraticCurveTo(-5, 8, -3, 0);
+    c.quadraticCurveTo(-2, -8, 0, -15);
+    c.fill();
+    c.globalAlpha = 1;
+    c.restore();
   }
 
-  function sunIcon(cx, cy, r, color, alpha = 1) {
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = r * 0.16;
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(a) * r * 1.5, cy + Math.sin(a) * r * 1.5);
-      ctx.lineTo(cx + Math.cos(a) * r * 1.9, cy + Math.sin(a) * r * 1.9);
-      ctx.stroke();
-    }
-    ctx.restore();
+  /* ================================================================
+     STATE & DOM
+     ================================================================ */
+  const state = {
+    format: "A",
+    theme: "palm",
+    img: null,
+    transform: { A: null, B: null },
+    idCode: randomIdCode(),
+    dragging: false,
+    pointers: new Map(),
+    pinchStartDist: 0,
+    pinchStartZoom: 1,
+  };
+
+  const canvas  = document.getElementById("stage");
+  const ctx     = canvas.getContext("2d");
+  const shell   = document.querySelector(".stage-shell");
+  const drop    = document.getElementById("dropHint");
+  const fileIn  = document.getElementById("fileInput");
+  const ctrls   = document.getElementById("stageControls");
+  const changeBtn = document.getElementById("changePhotoBtn");
+  const zoomSlider = document.getElementById("zoomSlider");
+  const dlBtn   = document.getElementById("downloadBtn");
+  const shareBtn = document.getElementById("shareBtn");
+  const shareHint = document.getElementById("shareHint");
+  const fmtBFields = document.getElementById("formatBFields");
+  const nameIn  = document.getElementById("nameInput");
+  const roleIn  = document.getElementById("roleInput");
+  const titleIn = document.getElementById("titleInput");
+  const shuffleBtn = document.getElementById("shuffleTitleBtn");
+  const toastEl = document.getElementById("toast");
+  const swatches = document.querySelectorAll(".theme-swatch");
+
+  titleIn.value = randomTitle();
+
+  /* ---------- Toast ---------- */
+  let toastT = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(() => toastEl.classList.remove("show"), 3500);
   }
 
-  function palmIcon(cx, cy, scale, color, alpha) {
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.scale(scale, scale);
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(0, 60);
-    ctx.quadraticCurveTo(4, 10, 6, -30);
-    ctx.stroke();
-    const fronds = [
-      [-40, -55, -10, -34], [40, -60, 12, -30], [-30, -10, -6, -20],
-      [32, -14, 8, -18], [0, -60, 4, -20],
-    ];
-    fronds.forEach(([ex, ey, mx, my]) => {
-      ctx.beginPath();
-      ctx.moveTo(6, -30);
-      ctx.quadraticCurveTo(mx, my, ex, ey);
-      ctx.quadraticCurveTo(mx * 0.6, my * 0.6, 6, -30);
-      ctx.fill();
+  /* ---------- Theme ---------- */
+  swatches.forEach(btn => {
+    btn.addEventListener("click", () => {
+      swatches.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.theme = btn.dataset.theme;
+      render();
     });
-    ctx.restore();
+  });
+
+  /* ================================================================
+     GEOMETRY
+     ================================================================ */
+  function getWindowRect(fmt) {
+    if (fmt === "A") return { x: 165, y: 165, w: 750, h: 750 };
+    /* Format B — circle in the beach scene */
+    return { x: 320, y: 370, w: 440, h: 440 };
   }
 
-  // Places a style's glyphs evenly around a circle — used for the PFP frame ring.
-  function drawIconRing(cx, cy, radius, style, count, size) {
-    const glyphs = style.glyphs;
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * Math.PI * 2;
-      const g = glyphs[i % glyphs.length];
-      ctx.save();
-      ctx.translate(cx + radius * Math.sin(a), cy - radius * Math.cos(a));
-      ctx.rotate(a);
-      g.fn(ctx, size, g.color);
-      ctx.restore();
+  function coverBase(img, w, h) { return Math.max(w / img.width, h / img.height); }
+
+  function getTransform(fmt) {
+    if (!state.transform[fmt] && state.img) {
+      const win = getWindowRect(fmt);
+      const b = coverBase(state.img, win.w, win.h);
+      state.transform[fmt] = {
+        zoom: 1,
+        offsetX: (win.w - state.img.width * b) / 2,
+        offsetY: (win.h - state.img.height * b) / 2,
+      };
     }
+    return state.transform[fmt];
   }
 
-  // Places a style's glyphs at the corners + edge-midpoints of a rect — used
-  // for the Builder ID card border, so accents frame the photo without
-  // crowding the name/role text underneath. The last glyph in a style is
-  // treated as the small "accent" mark and used at the top/bottom midpoints;
-  // the rest cycle through the four corners.
-  function drawCornerOrnaments(win, style, size) {
-    const glyphs = style.glyphs;
-    const cornerGlyphs = glyphs.length > 2 ? glyphs.slice(0, -1) : [glyphs[0]];
-    const midGlyph = glyphs[glyphs.length - 1];
-    const pad = size * 0.62;
-
-    [
-      { x: win.x - pad, y: win.y - pad },
-      { x: win.x + win.w + pad, y: win.y - pad },
-      { x: win.x - pad, y: win.y + win.h + pad },
-      { x: win.x + win.w + pad, y: win.y + win.h + pad },
-    ].forEach((p, i) => {
-      const g = cornerGlyphs[i % cornerGlyphs.length];
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      g.fn(ctx, size, g.color);
-      ctx.restore();
-    });
-
-    [
-      { x: win.x + win.w / 2, y: win.y - pad },
-      { x: win.x + win.w / 2, y: win.y + win.h + pad },
-    ].forEach((p) => {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      midGlyph.fn(ctx, size, midGlyph.color);
-      ctx.restore();
-    });
+  function clampT(fmt) {
+    const t = getTransform(fmt); if (!t) return;
+    const win = getWindowRect(fmt);
+    const e = coverBase(state.img, win.w, win.h) * t.zoom;
+    const dw = state.img.width * e, dh = state.img.height * e;
+    t.offsetX = Math.min(0, Math.max(Math.min(0, win.w - dw), t.offsetX));
+    t.offsetY = Math.min(0, Math.max(Math.min(0, win.h - dh), t.offsetY));
   }
 
-  function pillBadge(cx, cy, w, h, rotateDeg, bg, textColor, text, font) {
+  function applyZoom(fmt, nz) {
+    const t = getTransform(fmt); if (!t) return;
+    const win = getWindowRect(fmt);
+    const b = coverBase(state.img, win.w, win.h);
+    const oE = b * t.zoom, nE = b * nz;
+    const cx = win.w / 2, cy = win.h / 2;
+    t.offsetX = cx - (cx - t.offsetX) * (nE / oE);
+    t.offsetY = cy - (cy - t.offsetY) * (nE / oE);
+    t.zoom = nz;
+    clampT(fmt);
+  }
+
+  /* ---- Draw Photo Clipped into Circle ---- */
+  function drawPhoto(fmt, win) {
+    const t = getTransform(fmt);
+    if (!t || !state.img) return;
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate((rotateDeg * Math.PI) / 180);
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
-    roundedRectPath(ctx, -w / 2 + 4, -h / 2 + 6, w, h, h / 2);
-    ctx.fill();
-    ctx.fillStyle = bg;
-    roundedRectPath(ctx, -w / 2, -h / 2, w, h, h / 2);
-    ctx.fill();
-    ctx.fillStyle = textColor;
-    ctx.font = font;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, 0, 2);
+    ctx.beginPath();
+    ctx.arc(win.x + win.w / 2, win.y + win.h / 2, win.w / 2, 0, Math.PI * 2);
+    ctx.clip();
+    const b = coverBase(state.img, win.w, win.h);
+    const e = b * t.zoom;
+    ctx.drawImage(state.img, win.x + t.offsetX, win.y + t.offsetY,
+                  state.img.width * e, state.img.height * e);
     ctx.restore();
   }
 
-  function fitText(text, maxWidth, baseSize, fontFamily, weight = 800) {
-    let size = baseSize;
-    ctx.font = `${weight} ${size}px ${fontFamily}`;
-    while (ctx.measureText(text).width > maxWidth && size > 20) {
-      size -= 2;
-      ctx.font = `${weight} ${size}px ${fontFamily}`;
-    }
-    return size;
-  }
-
-  /* ---------------- format A: PFP frame ---------------- */
+  /* ================================================================
+     FORMAT A — PFP FRAME (1080 × 1080)
+     ================================================================ */
   function drawFrameA() {
-    const COLORS = BASE;
-    const RING = FRAME_STYLES[state.theme];
     const W = canvas.width, H = canvas.height;
+    const R = FRAME_STYLES[state.theme];
     ctx.clearRect(0, 0, W, H);
 
-    const grad = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, W / 2);
-    grad.addColorStop(0, COLORS.greenLight);
-    grad.addColorStop(1, COLORS.greenDeep);
-    ctx.fillStyle = grad;
+    /* -- Background -- */
+    const bg = ctx.createRadialGradient(W / 2, H * 0.4, 80, W / 2, H / 2, W * 0.6);
+    bg.addColorStop(0, BASE.green);
+    bg.addColorStop(1, BASE.greenDeep);
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    sunIcon(W / 2, H * 0.14, 26, COLORS.yellow, 0.18);
-    palmIcon(90, H - 60, 1.1, COLORS.cream, 0.1);
-    palmIcon(W - 90, H - 60, -1.1, COLORS.cream, 0.1);
+    /* -- Subtle paisley decorations -- */
+    drawPaisley(ctx, W * 0.06, H * 0.15, 18, -0.4);
+    drawPaisley(ctx, W * 0.94, H * 0.18, 16, 0.5);
+    drawPaisley(ctx, W * 0.08, H * 0.82, 14, 0.3);
+    drawPaisley(ctx, W * 0.92, H * 0.85, 15, -0.6);
 
+    /* -- Beach scene bottom half -- */
+    drawMountains(ctx, H * 0.68, W);
+    drawOcean(ctx, H * 0.70, H * 0.82, W);
+    drawSand(ctx, H * 0.81, H, W);
+
+    /* -- Sun & birds -- */
+    drawSunClouds(ctx, W * 0.84, H * 0.10, 22);
+    drawBirds(ctx, [
+      [W * 0.74, H * 0.06, 7],
+      [W * 0.80, H * 0.04, 5],
+      [W * 0.14, H * 0.08, 6],
+    ]);
+
+    /* -- Palm trees -- */
+    drawPalmTree(ctx, W * 0.06, H * 0.82, 140, 0.5, false);
+    drawPalmTree(ctx, W * 0.94, H * 0.82, 130, -0.4, true);
+
+    /* -- String lights -- */
+    drawStringLights(ctx, W * 0.04, H * 0.12, W * 0.96, H * 0.12, 12, 18);
+
+    /* -- Plants & flowers -- */
+    drawPlants(ctx, W * 0.02, H * 0.96, 1.1, false);
+    drawPlants(ctx, W * 0.98, H * 0.96, 1.1, true);
+    drawFlower(ctx, W * 0.15, H * 0.92, 7);
+    drawFlower(ctx, W * 0.86, H * 0.93, 6);
+
+    /* -- Small surfboards & starfish -- */
+    drawSurfboards(ctx, W * 0.86, H * 0.88, 0.5);
+    drawStarfish(ctx, W * 0.18, H * 0.93, 8);
+    drawShell(ctx, W * 0.78, H * 0.95, 5);
+
+    /* -- Photo window -- */
     const win = getWindowRect("A");
     const cx = win.x + win.w / 2, cy = win.y + win.h / 2, r = win.w / 2;
 
+    /* Cream glow behind photo */
+    ctx.save();
+    ctx.fillStyle = BASE.cream;
+    ctx.globalAlpha = 0.08;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 30, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
     if (state.img) {
-      drawPhotoInWindow("A", win);
+      drawPhoto("A", win);
     } else {
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       ctx.beginPath();
@@ -485,260 +913,417 @@
       ctx.fill();
     }
 
-    // ring — the customizable frame around the photo
+    /* Gold ring */
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, r + 9, 0, Math.PI * 2);
-    ctx.lineWidth = 14;
-    ctx.strokeStyle = RING.primary;
+    ctx.arc(cx, cy, r + 7, 0, Math.PI * 2);
+    ctx.lineWidth = 11;
+    ctx.strokeStyle = R.ring;
     ctx.stroke();
     ctx.restore();
 
-    dashedCircle(cx, cy, r + 26, { color: RING.secondary, width: 3, dash: [2, 9] });
-    drawIconRing(cx, cy, r + 50, RING, 9, 34);
+    /* Outer dotted ring */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 20, 0, Math.PI * 2);
+    ctx.setLineDash([3, 10]);
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = R.accent;
+    ctx.stroke();
+    ctx.restore();
 
-    drawArcText("HACKER HOUSE", cx, cy, r + 76, 0, {
-      font: `700 37px 'Baloo 2'`, color: COLORS.yellow, letterSpacing: 6,
+    /* Arc text */
+    drawArcText("HACKER HOUSE", cx, cy, r + 50, 0, {
+      font: `900 36px 'Fraunces',serif`, color: BASE.gold, letterSpacing: 5,
     });
-    drawArcText("GOA · 2026", cx, cy, r + 76, 180, {
-      font: `700 33px 'Space Mono'`, color: COLORS.cream, letterSpacing: 8, flip: true,
+    drawArcText("GOA · 2026", cx, cy, r + 50, 180, {
+      font: `700 28px 'Space Mono',monospace`, color: BASE.cream, letterSpacing: 7, flip: true,
     });
 
-    pillBadge(cx + r * 0.66, cy + r * 0.7, 168, 60, -8, COLORS.pink, COLORS.cream, "#FrameInGoa", `700 24px 'Baloo 2'`);
+    /* गोवा badge */
+    pillBadge(ctx, cx + r * 0.56, cy + r * 0.62, 110, 42, BASE.coral,
+             BASE.cream, "गोवा", "700 20px 'Baloo 2',sans-serif");
+
+    /* CODE • SUN • CHAOS small text at very top */
+    ctx.font = "600 14px 'Space Mono',monospace";
+    ctx.fillStyle = BASE.cream;
+    ctx.globalAlpha = 0.6;
+    ctx.textAlign = "center";
+    ctx.fillText("CODE  •  SUN  •  CHAOS", W / 2, 30);
+    ctx.globalAlpha = 1;
   }
 
-  /* ---------------- format B: builder ID card ---------------- */
+  /* ================================================================
+     FORMAT B — BUILDER ID CARD (1080 × 1350)
+     ================================================================ */
   function drawCardB() {
-    const COLORS = BASE;
-    const RING = FRAME_STYLES[state.theme];
     const W = canvas.width, H = canvas.height;
+    const R = FRAME_STYLES[state.theme];
     ctx.clearRect(0, 0, W, H);
 
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, COLORS.greenLight);
-    grad.addColorStop(1, COLORS.greenDeep);
-    ctx.fillStyle = grad;
+    const m = 32; // margin
+
+    /* ── BACKGROUND ── */
+    const bg = ctx.createLinearGradient(0, 0, 0, H * 0.35);
+    bg.addColorStop(0, BASE.green);
+    bg.addColorStop(1, BASE.greenDeep);
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    const margin = 44;
-    roundedRectPath(ctx, margin, margin, W - margin * 2, H - margin * 2, 40);
-    ctx.fillStyle = "rgba(255,255,255,0.035)";
+    /* Fill the lower part with green deep */
+    ctx.fillStyle = BASE.greenDeep;
+    ctx.fillRect(0, H * 0.3, W, H * 0.7);
+
+    /* Subtle inner panel */
+    rrect(ctx, m, m, W - m * 2, H - m * 2, 34);
+    ctx.fillStyle = "rgba(255,255,255,0.015)";
     ctx.fill();
 
-    ctx.save();
-    roundedRectPath(ctx, margin + 22, margin + 22, W - (margin + 22) * 2, H - (margin + 22) * 2, 28);
-    ctx.setLineDash([10, 10]);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(255,212,0,0.55)";
-    ctx.stroke();
-    ctx.restore();
+    /* ── BEACH SCENE ── */
+    const sceneTop = 260;
+    const mtBase = sceneTop + 120;
+    const oceanTop = mtBase + 25;
+    const sandTop = H * 0.56;
+    const bottomWaveY = H * 0.82;
 
-    // punch hole
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(W / 2, margin + 54, 22, 0, Math.PI * 2);
-    ctx.fillStyle = COLORS.greenDeep;
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(255,248,231,0.4)";
-    ctx.stroke();
-    ctx.restore();
+    drawMountains(ctx, mtBase, W);
+    drawOcean(ctx, oceanTop, sandTop + 15, W);
+    drawSand(ctx, sandTop, bottomWaveY + 30, W);
+    drawOcean(ctx, bottomWaveY + 20, H, W);
 
-    sunIcon(W - 130, margin + 110, 20, COLORS.yellow, 0.5);
-    palmIcon(120, margin + 130, 0.8, COLORS.cream, 0.14);
+    /* Palm trees */
+    drawPalmTree(ctx, 80, sandTop + 15, 240, 0.35, false);
+    drawPalmTree(ctx, W - 45, sandTop + 40, 190, -0.25, true);
 
-    // header wordmark
-    ctx.textAlign = "center";
-    ctx.fillStyle = COLORS.yellow;
-    ctx.font = `900 46px 'Fraunces'`;
-    ctx.fillText("HACKER HOUSE", W / 2, margin + 150);
-    ctx.font = `700 22px 'Space Mono'`;
-    ctx.fillStyle = COLORS.cream;
-    ctx.globalAlpha = 0.85;
-    ctx.fillText("GOA · 2026 BUILDER PASS", W / 2, margin + 184);
-    ctx.globalAlpha = 1;
+    /* Sun & clouds */
+    drawSunClouds(ctx, W - 155, sceneTop + 35, 26);
 
-    // photo window
+    /* Birds */
+    drawBirds(ctx, [
+      [W - 105, sceneTop + 8, 7],
+      [W - 80, sceneTop + 20, 5],
+      [W - 130, sceneTop + 25, 6],
+      [180, sceneTop + 15, 5],
+    ]);
+
+    /* Sailboat */
+    drawSailboat(ctx, W - 210, oceanTop + 55, 1.4);
+
+    /* String lights between palm tops */
+    drawStringLights(ctx, 160, sceneTop + 20, W - 160, sceneTop + 20, 10, 22);
+
+    /* ── PHOTO CIRCLE ── */
     const win = getWindowRect("B");
+    const cx = win.x + win.w / 2, cy = win.y + win.h / 2, r = win.w / 2;
+
+    /* Cream glow behind photo */
+    ctx.save();
+    ctx.fillStyle = BASE.cream;
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
     if (state.img) {
-      drawPhotoInWindow("B", win);
+      drawPhoto("B", win);
     } else {
-      roundedRectPath(ctx, win.x, win.y, win.w, win.h, win.r);
       ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
     }
-    // customizable frame around the photo
-    ctx.save();
-    roundedRectPath(ctx, win.x, win.y, win.w, win.h, win.r);
-    ctx.lineWidth = 12;
-    ctx.strokeStyle = RING.primary;
-    ctx.stroke();
-    ctx.restore();
-    ctx.save();
-    roundedRectPath(ctx, win.x - 14, win.y - 14, win.w + 28, win.h + 28, win.r + 14);
-    ctx.setLineDash([3, 11]);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = RING.secondary;
-    ctx.stroke();
-    ctx.restore();
-    drawCornerOrnaments(win, RING, 38);
 
-    // name
-    const name = (nameInput.value || "Your Name").trim() || "Your Name";
-    const nameY = win.y + win.h + 90;
-    const nameSize = fitText(name.toUpperCase(), W - 180, 62, "Fraunces", 900);
-    ctx.font = `900 ${nameSize}px 'Fraunces'`;
-    ctx.fillStyle = COLORS.cream;
-    ctx.textAlign = "center";
-    ctx.fillText(name.toUpperCase(), W / 2, nameY);
-
-    // role
-    const role = (roleInput.value || "Builder · Hacker House Goa").trim() || "Builder · Hacker House Goa";
-    ctx.font = `400 26px 'Space Mono'`;
-    ctx.fillStyle = COLORS.yellowSoft;
-    ctx.fillText(role, W / 2, nameY + 42);
-
-    // builder title pill
-    const title = (titleInput.value || randomTitle()).trim() || "Chief Vibes Officer";
-    const pillFont = `700 26px 'Baloo 2'`;
-    ctx.font = pillFont;
-    const pillW = Math.min(W - 160, ctx.measureText(title).width + 64);
-    pillBadge(W / 2, nameY + 96, pillW, 58, -2, COLORS.pink, COLORS.cream, title, pillFont);
-
-    // footer
-    const footerY = H - margin - 60;
+    /* Ring */
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(margin + 60, footerY - 34);
-    ctx.lineTo(W - margin - 60, footerY - 34);
-    ctx.setLineDash([2, 10]);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "rgba(255,248,231,0.4)";
+    ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = R.ring;
     ctx.stroke();
     ctx.restore();
 
-    ctx.textAlign = "left";
-    ctx.font = `700 20px 'Space Mono'`;
-    ctx.fillStyle = COLORS.cream;
+    /* Outer ring */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 16, 0, Math.PI * 2);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = R.accent;
+    ctx.globalAlpha = 0.4;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    /* ── SIGN POST ── */
+    drawSignPost(ctx, 150, sandTop + 80, 1.45);
+
+    /* ── SURFBOARDS ── */
+    drawSurfboards(ctx, W - 135, sandTop + 40, 1.45);
+
+    /* ── DECORATIVE ELEMENTS ON SAND ── */
+    drawStarfish(ctx, W / 2 - 140, sandTop + 125, 13);
+    drawShell(ctx, W / 2 + 165, sandTop + 110, 7);
+    drawFlower(ctx, W - 100, sandTop + 130, 8);
+
+    /* ── PLANTS AT BOTTOM ── */
+    drawPlants(ctx, 25, bottomWaveY + 25, 1.6, false);
+    drawPlants(ctx, W - 25, bottomWaveY + 25, 1.6, true);
+
+    /* ── WAVE BORDERS ── */
+    drawWaveBorder(ctx, bottomWaveY + 5, W, "rgba(245,240,225,0.2)", 5, 48);
+    drawWaveBorder(ctx, bottomWaveY + 18, W, "rgba(245,240,225,0.14)", 4, 38);
+
+    /* ── NAME PLATE ── */
+    const name = (nameIn.value || "YOUR NAME").trim() || "YOUR NAME";
+    const npY = sandTop + 165;
+    const npW = 480, npH = 60;
+
+    ctx.fillStyle = BASE.cream;
+    rrect(ctx, W / 2 - npW / 2, npY - npH / 2, npW, npH, 14);
+    ctx.fill();
+    ctx.strokeStyle = BASE.gold;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    const nSz = fitText(name.toUpperCase(), npW - 36, 36, "'Fraunces',serif", 900);
+    ctx.font = `900 ${nSz}px 'Fraunces',serif`;
+    ctx.fillStyle = BASE.ink;
+    ctx.textAlign = "center";
+    ctx.fillText(name.toUpperCase(), W / 2, npY + 4);
+
+    /* ── ROLE PLATE ── */
+    const role = (roleIn.value || "TEAM / ROLE").trim() || "TEAM / ROLE";
+    const rpY = npY + npH / 2 + 30;
+    const rpW = 330, rpH = 38;
+
+    ctx.fillStyle = BASE.gold;
+    rrect(ctx, W / 2 - rpW / 2, rpY - rpH / 2, rpW, rpH, 10);
+    ctx.fill();
+
+    const rSz = fitText(role.toUpperCase(), rpW - 28, 18, "'Space Mono',monospace", 700);
+    ctx.font = `700 ${rSz}px 'Space Mono',monospace`;
+    ctx.fillStyle = BASE.greenDeep;
+    ctx.textAlign = "center";
+    ctx.fillText(role.toUpperCase(), W / 2, rpY + 3);
+
+    /* ── BUILDER TITLE PILL ── */
+    const title = (titleIn.value || randomTitle()).trim() || "Chief Vibes Officer";
+    const tpY = rpY + rpH / 2 + 35;
+    const tFont = "700 20px 'Baloo 2',sans-serif";
+    ctx.font = tFont;
+    const tpW = Math.min(W - 160, ctx.measureText(title).width + 48);
+    pillBadge(ctx, W / 2, tpY, tpW, 44, BASE.coral, BASE.cream, title, tFont);
+
+    /* ── PAISLEY DECORATIONS ── */
+    drawPaisley(ctx, 75, sceneTop + 80, 14, 0.3);
+    drawPaisley(ctx, W - 75, sceneTop + 75, 12, -0.4);
+
+    /* ══════════════════════════════════════
+       TEXT OVERLAYS (drawn last to be on top)
+       ══════════════════════════════════════ */
+
+    /* ── PUNCH HOLE ── */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(W / 2, m + 34, 16, 0, Math.PI * 2);
+    ctx.fillStyle = BASE.greenDeep;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(245,240,225,0.3)";
+    ctx.stroke();
+    ctx.restore();
+
+    /* ── TOP BAR ── */
+    ctx.fillStyle = BASE.cream;
     ctx.globalAlpha = 0.85;
-    ctx.fillText("GOA, INDIA · 28–31 OCT 2026", margin + 60, footerY);
+    ctx.textAlign = "left";
+    ctx.font = "700 20px 'Space Mono',monospace";
+    ctx.fillText("2:47PM", m + 30, m + 82);
+    ctx.font = "400 13px 'Space Mono',monospace";
+    ctx.fillText("STUDIO", m + 30, m + 100);
+
     ctx.textAlign = "right";
-    ctx.fillStyle = COLORS.yellow;
-    ctx.fillText(state.idCode, W - margin - 60, footerY);
+    ctx.font = "400 15px 'Space Mono',monospace";
+    ctx.fillText("GOA, INDIA", W - m - 30, m + 82);
+    ctx.font = "700 15px 'Space Mono',monospace";
+    ctx.fillText("28 - 31 OCT 2026", W - m - 30, m + 100);
+    ctx.globalAlpha = 1;
+
+    /* ── TITLE: HACKER [गोवा] HOUSE ── */
+    const ttlY = m + 168;
+    ctx.textAlign = "center";
+
+    // Measure parts
+    ctx.font = "900 58px 'Fraunces',serif";
+    const hW = ctx.measureText("HACKER ").width;
+    const huW = ctx.measureText(" HOUSE").width;
+    const gFont = "800 36px 'Baloo 2',sans-serif";
+    ctx.font = gFont;
+    const gW = ctx.measureText("गोवा").width;
+
+    const totalW = hW + gW + huW + 20;
+    const tStartX = (W - totalW) / 2;
+
+    // HACKER
+    ctx.font = "900 58px 'Fraunces',serif";
+    ctx.fillStyle = BASE.gold;
+    ctx.textAlign = "left";
+    ctx.fillText("HACKER", tStartX, ttlY);
+
+    // गोवा pill
+    const goaCX = tStartX + hW + gW / 2 + 10;
+    pillBadge(ctx, goaCX, ttlY - 14, gW + 22, 38, BASE.coral, BASE.cream, "गोवा", gFont);
+
+    // HOUSE
+    ctx.font = "900 58px 'Fraunces',serif";
+    ctx.fillStyle = BASE.gold;
+    ctx.textAlign = "left";
+    ctx.fillText("HOUSE", goaCX + gW / 2 + 14, ttlY);
+
+    /* ── TAGLINE: ~~~~ CODE • SUN • CHAOS ~~~~ ── */
+    const tagY = ttlY + 38;
+    ctx.font = "600 18px 'Space Mono',monospace";
+    ctx.fillStyle = BASE.cream;
+    ctx.globalAlpha = 0.8;
+    ctx.textAlign = "center";
+    const tagTxt = "CODE  •  SUN  •  CHAOS";
+    const tagTxtW = ctx.measureText(tagTxt).width;
+    ctx.fillText(tagTxt, W / 2, tagY);
+
+    drawWaveOrnament(ctx, W / 2 - tagTxtW / 2 - 55, tagY - 2, 45, BASE.gold + "99");
+    drawWaveOrnament(ctx, W / 2 + tagTxtW / 2 + 10, tagY - 2, 45, BASE.gold + "99");
+    ctx.globalAlpha = 1;
+
+    /* ── FOOTER ── */
+    const ftY = H - 50;
+    ctx.textAlign = "left";
+    ctx.font = "400 14px 'Space Mono',monospace";
+    ctx.fillStyle = BASE.cream;
+    ctx.globalAlpha = 0.55;
+    ctx.fillText("CODE • SUN • CHAOS", m + 35, ftY);
+    ctx.textAlign = "right";
+    ctx.fillStyle = BASE.gold;
+    ctx.globalAlpha = 0.7;
+    ctx.fillText(state.idCode, W - m - 35, ftY);
     ctx.globalAlpha = 1;
   }
 
-  /* ---------------- render dispatch ---------------- */
-  let renderQueued = false;
+  /* ================================================================
+     RENDER
+     ================================================================ */
+  let rq = false;
   function render() {
-    if (renderQueued) return;
-    renderQueued = true;
+    if (rq) return;
+    rq = true;
     requestAnimationFrame(() => {
-      renderQueued = false;
+      rq = false;
       if (state.format === "A") drawFrameA(); else drawCardB();
     });
   }
 
-  /* ---------------- format toggle ---------------- */
-  const formatBtns = document.querySelectorAll(".format-btn");
-  formatBtns.forEach((btn) => {
+  /* ================================================================
+     FORMAT TOGGLE
+     ================================================================ */
+  const fmtBtns = document.querySelectorAll(".format-btn");
+  fmtBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      formatBtns.forEach((b) => { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
+      fmtBtns.forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-selected", "false");
+      });
       btn.classList.add("active");
       btn.setAttribute("aria-selected", "true");
       state.format = btn.dataset.format;
-      canvas.width = state.format === "A" ? 1080 : 1080;
+      canvas.width  = 1080;
       canvas.height = state.format === "A" ? 1080 : 1350;
-      stageShell.classList.toggle("format-B", state.format === "B");
-      formatBFields.hidden = state.format !== "B";
+      shell.classList.toggle("format-B", state.format === "B");
+      fmtBFields.hidden = state.format !== "B";
       if (state.img) {
-        clampTransform(state.format);
+        clampT(state.format);
         zoomSlider.value = Math.round((getTransform(state.format)?.zoom || 1) * 100);
       }
       render();
     });
   });
 
-  /* ---------------- upload handling ---------------- */
-  function isHeic(file) {
-    return /heic|heif/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+  /* ================================================================
+     FILE UPLOAD
+     ================================================================ */
+  function isHeic(f) {
+    return /heic|heif/i.test(f.type) || /\.hei[cf]$/i.test(f.name);
   }
 
   async function handleFile(file) {
-    if (!file || !file.type.startsWith("image/") && !isHeic(file)) {
-      toast("That doesn't look like an image — try a JPG, PNG, or HEIC.");
+    if (!file || (!file.type.startsWith("image/") && !isHeic(file))) {
+      toast("That doesn't look like an image — try JPG, PNG, or HEIC.");
       return;
     }
-    dropHint.querySelector("p").textContent = "Reading photo…";
+    drop.querySelector("p").textContent = "Reading photo…";
     let blob = file;
     if (isHeic(file)) {
       try {
-        const converted = await window.heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
-        blob = Array.isArray(converted) ? converted[0] : converted;
-      } catch (e) {
-        toast("Couldn't read that HEIC photo — try a JPG or PNG.");
-        resetDropHint();
+        const c = await window.heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+        blob = Array.isArray(c) ? c[0] : c;
+      } catch {
+        toast("Couldn't read HEIC — try JPG or PNG.");
+        resetDrop();
         return;
       }
     }
     const url = URL.createObjectURL(blob);
-    const image = new Image();
-    image.onload = () => {
-      state.img = image;
+    const img = new Image();
+    img.onload = () => {
+      state.img = img;
       state.transform = { A: null, B: null };
-      dropHint.hidden = true;
-      stageShell.classList.add("has-image");
-      stageControls.hidden = false;
-      downloadBtn.disabled = false;
+      drop.hidden = true;
+      shell.classList.add("has-image");
+      ctrls.hidden = false;
+      dlBtn.disabled = false;
       shareBtn.disabled = false;
-      shareHint.textContent = "Drag to reposition, pinch or use the slider to zoom. Everything renders locally in your browser.";
+      shareHint.textContent = "Drag to reposition · Pinch or slider to zoom · Everything renders locally.";
       render();
     };
-    image.onerror = () => {
-      toast("Couldn't load that photo. Try another file.");
-      resetDropHint();
-    };
-    image.src = url;
+    img.onerror = () => { toast("Couldn't load that photo."); resetDrop(); };
+    img.src = url;
   }
 
-  function resetDropHint() {
-    dropHint.querySelector("p").textContent = "Tap to upload your photo";
+  function resetDrop() {
+    drop.querySelector("p").textContent = "Tap to upload your photo";
   }
 
-  dropHint.addEventListener("click", () => fileInput.click());
-  changePhotoBtn.addEventListener("click", () => fileInput.click());
-  fileInput.addEventListener("change", (e) => {
-    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-    fileInput.value = "";
+  drop.addEventListener("click", () => fileIn.click());
+  changeBtn.addEventListener("click", () => fileIn.click());
+  fileIn.addEventListener("change", e => {
+    if (e.target.files?.[0]) handleFile(e.target.files[0]);
+    fileIn.value = "";
   });
 
-  ["dragover", "dragenter"].forEach((ev) =>
-    stageShell.addEventListener(ev, (e) => { e.preventDefault(); stageShell.style.outline = `3px solid ${BASE.yellow}`; })
+  ["dragover", "dragenter"].forEach(ev =>
+    shell.addEventListener(ev, e => { e.preventDefault(); shell.style.outline = `3px solid ${BASE.gold}`; })
   );
-  ["dragleave", "drop"].forEach((ev) =>
-    stageShell.addEventListener(ev, (e) => { e.preventDefault(); stageShell.style.outline = "none"; })
+  ["dragleave", "drop"].forEach(ev =>
+    shell.addEventListener(ev, e => { e.preventDefault(); shell.style.outline = "none"; })
   );
-  stageShell.addEventListener("drop", (e) => {
-    const file = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (file) handleFile(file);
+  shell.addEventListener("drop", e => {
+    const f = e.dataTransfer?.files?.[0];
+    if (f) handleFile(f);
   });
 
-  /* ---------------- pointer drag / pinch zoom ---------------- */
-  function canvasScaleFactor() {
-    const rect = canvas.getBoundingClientRect();
-    return canvas.width / rect.width;
-  }
+  /* ================================================================
+     POINTER DRAG / PINCH ZOOM
+     ================================================================ */
+  function scaleFactor() { return canvas.width / canvas.getBoundingClientRect().width; }
+  let lastPtr = null;
 
-  let lastPointerPos = null;
-
-  stageShell.addEventListener("pointerdown", (e) => {
+  shell.addEventListener("pointerdown", e => {
     if (!state.img) return;
-    stageShell.setPointerCapture(e.pointerId);
+    shell.setPointerCapture(e.pointerId);
     state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (state.pointers.size === 1) {
       state.dragging = true;
-      lastPointerPos = { x: e.clientX, y: e.clientY };
-      stageShell.classList.add("dragging");
+      lastPtr = { x: e.clientX, y: e.clientY };
+      shell.classList.add("dragging");
     } else if (state.pointers.size === 2) {
       const pts = [...state.pointers.values()];
       state.pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
@@ -746,57 +1331,53 @@
     }
   });
 
-  stageShell.addEventListener("pointermove", (e) => {
+  shell.addEventListener("pointermove", e => {
     if (!state.pointers.has(e.pointerId)) return;
     state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
     if (state.pointers.size === 2) {
       const pts = [...state.pointers.values()];
       const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-      const ratio = dist / (state.pinchStartDist || dist);
-      const newZoom = Math.min(3, Math.max(1, state.pinchStartZoom * ratio));
-      applyZoom(state.format, newZoom);
-      zoomSlider.value = Math.round(newZoom * 100);
+      const nz = Math.min(3, Math.max(1, state.pinchStartZoom * dist / (state.pinchStartDist || dist)));
+      applyZoom(state.format, nz);
+      zoomSlider.value = Math.round(nz * 100);
       render();
       return;
     }
-
-    if (state.dragging && lastPointerPos) {
-      const scale = canvasScaleFactor();
-      const dx = (e.clientX - lastPointerPos.x) * scale;
-      const dy = (e.clientY - lastPointerPos.y) * scale;
-      lastPointerPos = { x: e.clientX, y: e.clientY };
+    if (state.dragging && lastPtr) {
+      const s = scaleFactor();
+      const dx = (e.clientX - lastPtr.x) * s;
+      const dy = (e.clientY - lastPtr.y) * s;
+      lastPtr = { x: e.clientX, y: e.clientY };
       const t = getTransform(state.format);
       if (t) {
         t.offsetX += dx;
         t.offsetY += dy;
-        clampTransform(state.format);
+        clampT(state.format);
         render();
       }
     }
   });
 
-  function endPointer(e) {
+  function endPtr(e) {
     state.pointers.delete(e.pointerId);
     if (state.pointers.size < 2) state.pinchStartDist = 0;
     if (state.pointers.size === 0) {
       state.dragging = false;
-      lastPointerPos = null;
-      stageShell.classList.remove("dragging");
+      lastPtr = null;
+      shell.classList.remove("dragging");
     }
   }
-  stageShell.addEventListener("pointerup", endPointer);
-  stageShell.addEventListener("pointercancel", endPointer);
-  stageShell.addEventListener("pointerleave", (e) => { if (state.pointers.size <= 1) endPointer(e); });
+  shell.addEventListener("pointerup", endPtr);
+  shell.addEventListener("pointercancel", endPtr);
+  shell.addEventListener("pointerleave", e => { if (state.pointers.size <= 1) endPtr(e); });
 
-  stageShell.addEventListener("wheel", (e) => {
+  shell.addEventListener("wheel", e => {
     if (!state.img) return;
     e.preventDefault();
-    const t = getTransform(state.format);
-    if (!t) return;
-    const newZoom = Math.min(3, Math.max(1, t.zoom - e.deltaY * 0.0015));
-    applyZoom(state.format, newZoom);
-    zoomSlider.value = Math.round(newZoom * 100);
+    const t = getTransform(state.format); if (!t) return;
+    const nz = Math.min(3, Math.max(1, t.zoom - e.deltaY * 0.0015));
+    applyZoom(state.format, nz);
+    zoomSlider.value = Math.round(nz * 100);
     render();
   }, { passive: false });
 
@@ -806,13 +1387,17 @@
     render();
   });
 
-  /* ---------------- form fields ---------------- */
-  [nameInput, roleInput, titleInput].forEach((el) => el.addEventListener("input", render));
-  shuffleTitleBtn.addEventListener("click", () => { titleInput.value = randomTitle(); render(); });
+  /* ================================================================
+     FORM FIELDS
+     ================================================================ */
+  [nameIn, roleIn, titleIn].forEach(el => el.addEventListener("input", render));
+  shuffleBtn.addEventListener("click", () => { titleIn.value = randomTitle(); render(); });
 
-  /* ---------------- download ---------------- */
-  downloadBtn.addEventListener("click", () => {
-    canvas.toBlob((blob) => {
+  /* ================================================================
+     DOWNLOAD
+     ================================================================ */
+  dlBtn.addEventListener("click", () => {
+    canvas.toBlob(blob => {
       if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -822,58 +1407,69 @@
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast("Downloaded — you're ready to post! \u{1F3D6}️");
+      toast("Downloaded — you're ready to post! 🏖️");
     }, "image/png");
   });
 
-  /* ---------------- share to X ---------------- */
+  /* ================================================================
+     SHARE TO X (Twitter)
+     ================================================================ */
   function buildCaption() {
     if (state.format === "A") {
-      return "Landed my Hacker House Goa 2026 profile frame \u{1F334}\u{1F4BB}";
+      return "Just got my Hacker House Goa 2026 profile frame! 🌴💻 CODE • SUN • CHAOS";
     }
-    const name = (nameInput.value || "").trim();
-    const title = (titleInput.value || "Chief Vibes Officer").trim();
-    return `${name ? name + "’s" : "My"} Hacker House Goa 2026 Builder ID is live — ${title}, reporting for duty \u{1F334}`;
+    const name = (nameIn.value || "").trim();
+    const title = (titleIn.value || "Chief Vibes Officer").trim();
+    return `${name ? name + "'s" : "My"} Hacker House Goa 2026 Builder ID is ready — ${title}, reporting for duty 🌴🏖️`;
   }
 
   shareBtn.addEventListener("click", () => {
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob(async blob => {
       if (!blob) return;
-      const text = buildCaption();
-      const filename = `hhgoa2026-${state.format === "A" ? "frame" : "id-card"}.png`;
-      const file = new File([blob], filename, { type: "image/png" });
+      const caption = buildCaption();
+      const fname = `hhgoa2026-${state.format === "A" ? "frame" : "id-card"}.png`;
+      const file = new File([blob], fname, { type: "image/png" });
 
-      // Primary path: the OS share sheet can attach the actual generated
-      // image to X (or any app the user picks) — this is the only way a
-      // web page can hand X a real file instead of just a link.
+      /* ── Primary: Native Share (mobile — can attach file directly) ── */
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: "Hacker House Goa 2026", text });
-          toast("Shared! See you in Goa \u{1F334}");
+          await navigator.share({
+            files: [file],
+            title: "Hacker House Goa 2026",
+            text: caption,
+          });
+          toast("Shared! See you in Goa 🌴");
           return;
         } catch (err) {
-          if (err && err.name === "AbortError") return;
+          if (err?.name === "AbortError") return;
+          /* fall through to desktop fallback */
         }
       }
 
-      // Fallback: X's web composer has no API for attaching an image from a
-      // page, so download the graphic and open the composer with the
-      // caption ready — attach the downloaded file in one extra tap.
-      const url = URL.createObjectURL(blob);
+      /* ── Fallback: Auto-download image + redirect to X ── */
+      // Step 1: Download the image
+      const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
+      a.href = dlUrl;
+      a.download = fname;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      setTimeout(() => URL.revokeObjectURL(dlUrl), 5000);
 
-      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=FrameInGoa`;
-      window.open(intent, "_blank", "noopener");
-      toast("Image downloaded — attach it to your tweet on X \u{1F4CE}");
+      // Step 2: Short delay to let download start, then open X
+      toast("Image saved! Opening X — attach it to your tweet 📎");
+
+      setTimeout(() => {
+        const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}&hashtags=HackerHouseGoa,FrameInGoa`;
+        window.open(tweetUrl, "_blank", "noopener");
+      }, 600);
+
     }, "image/png");
   });
 
-  /* ---------------- init ---------------- */
+  /* ================================================================
+     INIT
+     ================================================================ */
   render();
 })();
