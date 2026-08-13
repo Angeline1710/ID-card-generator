@@ -37,6 +37,10 @@
     "Whiteboard Poetry", "WiFi Diplomacy", "Deploy Fridays"
   ];
 
+  // BASE is the site's fixed interface palette — used for every canvas element
+  // except the ring/border that wraps the photo, which follows the chosen theme.
+  const BASE = THEMES.classic;
+
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const randomTitle = () => `${pick(TITLE_ADJ)} ${pick(TITLE_NOUN)}`;
   const randomIdCode = () => {
@@ -90,27 +94,12 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3200);
   }
 
-  /* ---------------- theme ---------------- */
-  function applyThemeVars(themeId) {
-    const t = THEMES[themeId];
-    const root = document.documentElement.style;
-    root.setProperty("--green-deep", t.greenDeep);
-    root.setProperty("--green", t.green);
-    root.setProperty("--green-light", t.greenLight);
-    root.setProperty("--yellow", t.yellow);
-    root.setProperty("--yellow-soft", t.yellowSoft);
-    root.setProperty("--pink", t.pink);
-    root.setProperty("--pink-deep", t.pinkDeep);
-    root.setProperty("--cream", t.cream);
-    root.setProperty("--ink", t.ink);
-  }
-
+  /* ---------------- theme (ring/border around the photo only) ---------------- */
   themeSwatches.forEach((btn) => {
     btn.addEventListener("click", () => {
       themeSwatches.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       state.theme = btn.dataset.theme;
-      applyThemeVars(state.theme);
       render();
     });
   });
@@ -313,7 +302,8 @@
 
   /* ---------------- format A: PFP frame ---------------- */
   function drawFrameA() {
-    const COLORS = THEMES[state.theme];
+    const COLORS = BASE;
+    const RING = THEMES[state.theme];
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -339,17 +329,17 @@
       ctx.fill();
     }
 
-    // ring
+    // ring — the customizable frame around the photo
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r + 9, 0, Math.PI * 2);
     ctx.lineWidth = 18;
-    ctx.strokeStyle = COLORS.yellow;
+    ctx.strokeStyle = RING.yellow;
     ctx.stroke();
     ctx.restore();
 
-    dashedCircle(cx, cy, r + 34, { color: COLORS.pink, width: 5, dash: [4, 14] });
-    dashedCircle(cx, cy, r + 52, { color: COLORS.yellow, width: 3, dash: [2, 10] });
+    dashedCircle(cx, cy, r + 34, { color: RING.pink, width: 5, dash: [4, 14] });
+    dashedCircle(cx, cy, r + 52, { color: RING.yellow, width: 3, dash: [2, 10] });
 
     drawArcText("HACKER HOUSE", cx, cy, r + 74, 0, {
       font: `700 40px 'Baloo 2'`, color: COLORS.yellow, letterSpacing: 6,
@@ -363,7 +353,8 @@
 
   /* ---------------- format B: builder ID card ---------------- */
   function drawCardB() {
-    const COLORS = THEMES[state.theme];
+    const COLORS = BASE;
+    const RING = THEMES[state.theme];
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -420,17 +411,18 @@
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       ctx.fill();
     }
+    // customizable frame around the photo
     ctx.save();
     roundedRectPath(ctx, win.x, win.y, win.w, win.h, win.r);
     ctx.lineWidth = 12;
-    ctx.strokeStyle = COLORS.yellow;
+    ctx.strokeStyle = RING.yellow;
     ctx.stroke();
     ctx.restore();
     ctx.save();
     roundedRectPath(ctx, win.x - 14, win.y - 14, win.w + 28, win.h + 28, win.r + 14);
     ctx.setLineDash([3, 11]);
     ctx.lineWidth = 3;
-    ctx.strokeStyle = COLORS.pink;
+    ctx.strokeStyle = RING.pink;
     ctx.stroke();
     ctx.restore();
 
@@ -564,7 +556,7 @@
   });
 
   ["dragover", "dragenter"].forEach((ev) =>
-    stageShell.addEventListener(ev, (e) => { e.preventDefault(); stageShell.style.outline = `3px solid ${COLORS.yellow}`; })
+    stageShell.addEventListener(ev, (e) => { e.preventDefault(); stageShell.style.outline = `3px solid ${BASE.yellow}`; })
   );
   ["dragleave", "drop"].forEach((ev) =>
     stageShell.addEventListener(ev, (e) => { e.preventDefault(); stageShell.style.outline = "none"; })
@@ -688,23 +680,10 @@
   }
 
   shareBtn.addEventListener("click", () => {
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "hhgoa2026.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-
-      const text = buildCaption();
-      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=FrameInGoa&url=${encodeURIComponent(location.origin)}`;
-      window.open(intent, "_blank", "noopener");
-      toast("Image downloaded — attach it on X \u{1F4CE}");
-    }, "image/png");
+    const text = buildCaption();
+    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=FrameInGoa&url=${encodeURIComponent(location.origin)}`;
+    window.open(intent, "_blank", "noopener");
+    toast("Opening X — don't forget to attach your download! \u{1F334}");
   });
 
   /* ---------------- init ---------------- */
