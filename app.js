@@ -1457,13 +1457,13 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(dlUrl), 5000);
 
-      // Step 2: Short delay to let download start, then open X
-      toast("Image saved! Opening X — attach it to your tweet 📎");
+      // Step 2: Short delay to let download start, then redirect to X (opens X app or X web page)
+      toast("Image saved! Redirecting to X — attach your graphic to post 📎");
 
       setTimeout(() => {
-        const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}&hashtags=HackerHouseGoa,FrameInGoa`;
-        window.open(tweetUrl, "_blank", "noopener");
-      }, 600);
+        const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(caption)}&hashtags=HackerHouseGoa,FrameInGoa`;
+        window.location.href = tweetUrl;
+      }, 500);
 
     }, "image/png");
   });
